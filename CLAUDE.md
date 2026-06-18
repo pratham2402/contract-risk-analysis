@@ -2,6 +2,16 @@
 
 Multi-agent contract risk and obligation intelligence system. Analyzes contracts using 4 agents (orchestrator, contract understanding, risk and compliance, decision and recommendation) communicating via Google A2A protocol. Evaluates against 17 standards (GDPR, HIPAA, PCI DSS, SOC 2, NIST CSF, etc.) using FAISS hybrid vector search.
 
+## Token efficiency
+
+- **Do NOT read `standards_data.py` in full** unless adding new standards — it's 1718 lines of curated regulatory entries. Use grep to find specific standards.
+- **Do NOT read generated data files** — `.faiss`, `.npy`, `.pkl` files in `data/` are binary and unreadable.
+- **Do NOT re-read files already read earlier in the session** — the harness tracks state.
+- **Use the Explore agent** for broad searches across many files rather than reading each one.
+- **Consult this CLAUDE.md first** for architecture, source layout, key patterns, and commands before searching the codebase.
+- **Avoid reading `node_modules/` or `venv/`** — they're excluded via `.claudeignore` but if not loaded, don't traverse them.
+- **Prefer targeted grep over full file reads** when answering questions about specific symbols, patterns, or references.
+
 ## Commands
 
 ```bash
