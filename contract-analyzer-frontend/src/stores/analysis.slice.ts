@@ -6,6 +6,7 @@ import type {
 } from "@/lib/types";
 
 export type MainTab = "overview" | "findings" | "actions" | "audit-standards";
+export type InspectorView = "summary" | "clause" | "finding" | "escalation";
 export type RecommendationsView = "decision" | "owner";
 
 export interface FindingsFilter {
