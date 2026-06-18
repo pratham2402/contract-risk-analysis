@@ -38,6 +38,7 @@ export function ConsoleLayout({ children }: { children: ReactNode }) {
             size="icon"
             className="h-7 w-7"
             onClick={() => setSidebarOpen((v) => !v)}
+            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
           >
             {sidebarOpen ? (
               <PanelLeftClose className="h-4 w-4" />

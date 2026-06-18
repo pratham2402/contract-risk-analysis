@@ -130,3 +130,90 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+/* ── Focus-visible ─────────────────────────────────────────── */
+
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* ── Reduced motion ────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Print styles ──────────────────────────────────────────── */
+
+@media print {
+  /* Hide chrome */
+  header,
+  nav,
+  aside,
+  button:not(.print-keep),
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  /* Full-width main content */
+  main {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Cyan/blue links print as dark */
+  a,
+  .text-violet-500,
+  .text-violet-600 {
+    color: #1a1a2e !important;
+    text-decoration: underline;
+  }
+
+  /* Remove backgrounds — force white in print */
+  .bg-slate-50,
+  .bg-white {
+    background: white !important;
+  }
+
+  /* Ensure borders print */
+  .border {
+    border-color: #d1d5db !important;
+  }
+}
+
+/* ── Mobile responsive ─────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+  /* Single-column layout: hide sidebar and inspector by default */
+  .mobile-hidden {
+    display: none !important;
+  }
+
+  /* Inspector becomes full-screen sheet when open */
+  .mobile-inspector {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    width: 100vw !important;
+  }
+}

@@ -1,0 +1,76 @@
+# Python virtual environment
+venv/
+
+# Node dependencies and build output
+node_modules/
+.next/
+out/
+
+# Python bytecode and caches
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Environment files (contain secrets)
+.env
+.env.local
+
+# Git
+.git/
+
+# FAISS vector database and large binary files
+*.faiss
+*.npy
+*.pkl
+
+# Compiled binaries
+*.so
+*.node
+*.dylib
+*.dll
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+
+# Binary documents
+*.pdf
+*.docx
+*.xlsx
+*.pptx
+
+# Images
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.webp
+
+# IDE and editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude local settings (may contain secrets)
+.claude/settings.local.json
