@@ -141,6 +141,10 @@ export interface AnalysisResponse {
   jurisdiction_analysis: JurisdictionAnalysis;
   standards_applicability: StandardsApplicability[];
   audit_trail: AuditTrailEntry[];
+  verification_report?: VerificationReport;
+  escalation_tickets?: EscalationTicket[];
+  agent_trace?: AgentTraceEntry[];
+  retrieved_evidence?: RetrievedChunk[];
 }
 
 export interface ContractListItem {
@@ -159,3 +163,103 @@ export interface ContractDetail extends ContractListItem {
   contract_text: string;
   analysis: AnalysisResponse;
 }
+
+// ── Verification ────────────────────────────────────────────
+
+export type VerificationFlagType =
+  | "hallucination"
+  | "contradiction"
+  | "misattribution"
+  | "missing_citation";
+
+export interface VerificationFlag {
+  id: string;
+  finding_id: string;
+  flag_type: VerificationFlagType;
+  description: string;
+  claimed_text: string;
+  actual_text: string;
+  standard: string;
+  article: string | null;
+  confidence: number;
+}
+
+export interface VerificationReport {
+  total_checks: number;
+  passed: number;
+  failed: number;
+  hallucination_count: number;
+  flags: VerificationFlag[];
+}
+
+// ── Escalation ──────────────────────────────────────────────
+
+export interface EscalationTicket {
+  id: string;
+  finding_id: string;
+  reason: string;
+  owner: Owner;
+  resolved: boolean;
+  resolution_notes: string | null;
+  created_at: string;
+  resolved_at: string | null;
+}
+
+// ── Agent Trace ─────────────────────────────────────────────
+
+export interface ToolCallEntry {
+  tool_name: string;
+  arguments: Record<string, unknown>;
+  result: string;
+  duration_ms: number;
+}
+
+export interface RetrievedChunk {
+  content: string;
+  standard: string;
+  article: string | null;
+  clause: string | null;
+  relevance_score: number;
+  chunk_id: string;
+}
+
+export interface AgentTraceEntry {
+  agent_name: string;
+  stage: string;
+  input_summary: string;
+  output_summary: string;
+  tool_calls: ToolCallEntry[];
+  retrieved_chunks: RetrievedChunk[];
+  duration_ms: number;
+  timestamp: string;
+}
+
+// ── SSE Events ──────────────────────────────────────────────
+
+export interface SSEStageEvent {
+  type: "stage";
+  stage: string;
+  status: "started" | "running" | "completed" | "failed";
+  progress: number;
+  message: string;
+}
+
+export interface SSETraceEvent {
+  type: "trace";
+  agent: string;
+  stage: string;
+  tool_name: string;
+  input: string;
+  output: string;
+  retrieved_chunks: RetrievedChunk[];
+  timestamp: string;
+}
+
+export interface SSEErrorEvent {
+  type: "error";
+  code: string;
+  message: string;
+  details: string | null;
+}
+
+export type SSEEvent = SSEStageEvent | SSETraceEvent | SSEErrorEvent;
