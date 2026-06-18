@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ConsoleSidebar } from "./ConsoleSidebar";
 import { InspectorPanel } from "./InspectorPanel";
 import { CrossJurisdictionDiffTrigger } from "./contract/CrossJurisdictionDiff";
+import { ExportButton } from "./export/ExportButton";
 
 export function ConsoleLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -49,6 +50,7 @@ export function ConsoleLayout({ children }: { children: ReactNode }) {
           </span>
           <div className="flex-1" />
           <CrossJurisdictionDiffTrigger />
+          <ExportButton />
         </div>
 
         {/* Content */}
