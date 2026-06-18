@@ -6,6 +6,7 @@ import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConsoleSidebar } from "./ConsoleSidebar";
 import { InspectorPanel } from "./InspectorPanel";
+import { CrossJurisdictionDiffTrigger } from "./contract/CrossJurisdictionDiff";
 
 export function ConsoleLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -46,6 +47,8 @@ export function ConsoleLayout({ children }: { children: ReactNode }) {
           <span className="text-xs font-semibold tracking-widest text-slate-500">
             COMPLIANCE ANALYZER
           </span>
+          <div className="flex-1" />
+          <CrossJurisdictionDiffTrigger />
         </div>
 
         {/* Content */}

@@ -17,7 +17,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ContractViewer } from "@/components/console/ContractViewer";
+import { ContractViewer } from "@/app/console/contract/ContractViewer";
 import { useStore } from "@/stores";
 import {
   cn,
@@ -127,13 +127,7 @@ export function OverviewTab() {
       <div className="flex-1 flex flex-col overflow-hidden mt-3 border-t border-border">
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full">
-            <ContractViewer
-              contractText={contractText}
-              clauses={analysis.clauses}
-              findings={analysis.findings}
-              selectedClauseId={effectiveClauseId}
-              onClauseSelect={handleClauseSelect}
-            />
+            <ContractViewer />
           </ScrollArea>
         </div>
 
