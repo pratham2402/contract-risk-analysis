@@ -141,10 +141,10 @@ export interface AnalysisResponse {
   jurisdiction_analysis: JurisdictionAnalysis;
   standards_applicability: StandardsApplicability[];
   audit_trail: AuditTrailEntry[];
-  verification_report?: VerificationReport;
-  escalation_tickets?: EscalationTicket[];
-  agent_trace?: AgentTraceEntry[];
-  retrieved_evidence?: RetrievedChunk[];
+  verification_report: VerificationReport | null;
+  escalation_tickets: EscalationTicket[];
+  agent_trace: AgentTraceEntry[];
+  retrieved_evidence: RetrievedChunk[];
 }
 
 export interface ContractListItem {
@@ -166,72 +166,60 @@ export interface ContractDetail extends ContractListItem {
 
 // ── Verification ────────────────────────────────────────────
 
-export type VerificationFlagType =
-  | "hallucination"
-  | "contradiction"
-  | "misattribution"
-  | "missing_citation";
-
 export interface VerificationFlag {
-  id: string;
   finding_id: string;
-  flag_type: VerificationFlagType;
-  description: string;
-  claimed_text: string;
-  actual_text: string;
-  standard: string;
-  article: string | null;
-  confidence: number;
+  flag_type: "hallucinated_citation" | "unsupported_citation"
+    | "disconnected_reasoning" | "risk_level_mismatch" | "generic_exclusion";
+  severity: "block" | "warn" | "info";
+  detail: string;
 }
 
 export interface VerificationReport {
-  total_checks: number;
-  passed: number;
-  failed: number;
-  hallucination_count: number;
+  verified: boolean;
+  total_findings: number;
+  total_citations: number;
   flags: VerificationFlag[];
+  hallucination_count: number;
+  adjusted_confidence: number;
 }
 
 // ── Escalation ──────────────────────────────────────────────
 
 export interface EscalationTicket {
-  id: string;
-  finding_id: string;
+  ticket_id: string;
   reason: string;
-  owner: Owner;
-  resolved: boolean;
-  resolution_notes: string | null;
-  created_at: string;
-  resolved_at: string | null;
+  clause_id: string | null;
+  standard: string | null;
+  severity: string;
+  timestamp: string;
+  resolved?: boolean;
+  resolution?: { decision: string; timestamp: string };
 }
 
 // ── Agent Trace ─────────────────────────────────────────────
 
 export interface ToolCallEntry {
-  tool_name: string;
-  arguments: Record<string, unknown>;
-  result: string;
-  duration_ms: number;
+  tool: string;
+  input: string;
+  timestamp: string;
 }
 
 export interface RetrievedChunk {
-  content: string;
+  source: "faiss" | "bm25";
   standard: string;
   article: string | null;
-  clause: string | null;
+  snippet: string;
   relevance_score: number;
-  chunk_id: string;
 }
 
 export interface AgentTraceEntry {
-  agent_name: string;
-  stage: string;
-  input_summary: string;
-  output_summary: string;
-  tool_calls: ToolCallEntry[];
-  retrieved_chunks: RetrievedChunk[];
-  duration_ms: number;
   timestamp: string;
+  stage: string;
+  action: string;
+  specialist?: string;
+  reaact_iteration?: number;
+  tool_calls?: ToolCallEntry[];
+  retrieved_chunks?: RetrievedChunk[];
 }
 
 // ── SSE Events ──────────────────────────────────────────────
@@ -239,27 +227,20 @@ export interface AgentTraceEntry {
 export interface SSEStageEvent {
   type: "stage";
   stage: string;
-  status: "started" | "running" | "completed" | "failed";
-  progress: number;
+  status: "started" | "in_progress" | "completed" | "failed";
+  timestamp: string;
   message: string;
 }
 
 export interface SSETraceEvent {
   type: "trace";
-  agent: string;
-  stage: string;
-  tool_name: string;
-  input: string;
-  output: string;
-  retrieved_chunks: RetrievedChunk[];
-  timestamp: string;
+  trace: AgentTraceEntry;
 }
 
 export interface SSEErrorEvent {
   type: "error";
-  code: string;
+  stage: string;
   message: string;
-  details: string | null;
 }
 
 export type SSEEvent = SSEStageEvent | SSETraceEvent | SSEErrorEvent;
