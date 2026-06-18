@@ -9,6 +9,7 @@ import { VerificationPanel } from "./verification/VerificationPanel";
 import { ConfidenceIndicator } from "./verification/ConfidenceIndicator";
 import { CitationIntegrityBadge } from "./verification/CitationIntegrityBadge";
 import { RISK_COLORS, STANDARD_LABELS, CATEGORY_LABELS, cn } from "@/lib/utils";
+import { EscalationPanel } from "./escalation/EscalationPanel";
 
 export function InspectorPanel() {
   const analysis = useStore((s) => s.analysis);
@@ -48,11 +49,7 @@ export function InspectorPanel() {
         {inspectorView === "finding" && (
           <FindingDetailPanel findingId={selectedFindingId!} />
         )}
-        {inspectorView === "escalation" && (
-          <div className="space-y-3 p-4">
-            <p className="text-sm text-slate-400">Escalation tickets — Phase 6</p>
-          </div>
-        )}
+        {inspectorView === "escalation" && <EscalationPanel />}
       </motion.div>
     </div>
   );
