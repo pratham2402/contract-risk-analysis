@@ -18,6 +18,7 @@ import {
   STANDARD_LABELS,
   CATEGORY_LABELS,
 } from "@/lib/utils";
+import { ConfidenceIndicator } from "@/app/console/verification/ConfidenceIndicator";
 import type { Finding, ParsedClause, RiskLevel } from "@/lib/types";
 
 const RISK_LEVELS: RiskLevel[] = ["critical", "high", "medium", "low", "info"];
@@ -285,6 +286,14 @@ export function FindingsTab() {
                         </p>
                       </CollapsibleContent>
                     </Collapsible>
+
+                    {/* Confidence */}
+                    {finding.confidence != null && (
+                      <ConfidenceIndicator
+                        confidence={finding.confidence}
+                        className="mt-2"
+                      />
+                    )}
 
                     {/* Footer */}
                     <div className="mt-2 flex items-center gap-3">
