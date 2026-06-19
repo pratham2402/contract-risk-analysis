@@ -1,12 +1,10 @@
 """Contract Understanding Agent.
 
 Parses contract text into structured clauses using LLM-based extraction.
-Exposed as an A2A-compatible agent via the AgentExecutor interface.
 """
 
 import json
 import time
-from uuid import uuid4
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI

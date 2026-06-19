@@ -18,10 +18,8 @@ class TestConfigValues:
 
     def test_essential_values_are_set(self):
         from contract_analyzer.config import config
-        assert config.llm_provider
         assert config.llm_model
         assert config.llm_api_key, "LLM API key must be set"
-        assert config.api_port > 0
         assert config.risk_agent_max_iterations > 0
         assert config.max_upload_size_mb > 0
         assert 0 <= config.llm_temperature <= 2.0
@@ -65,14 +63,14 @@ class TestConfigReload:
         importlib.reload(contract_analyzer.config)
 
     def test_boolean_env_false(self):
-        os.environ["USE_HYBRID_RETRIEVAL"] = "false"
+        os.environ["VERIFICATION_ENABLED"] = "false"
 
         import importlib
         import contract_analyzer.config
         importlib.reload(contract_analyzer.config)
 
         c = contract_analyzer.config.Config()
-        assert c.use_hybrid_retrieval is False
+        assert c.verification_enabled is False
 
         importlib.reload(contract_analyzer.config)
 

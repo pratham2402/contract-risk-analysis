@@ -2,19 +2,17 @@
 
 These test the route_after_* methods directly by constructing state dicts.
 The orchestrator's ainvoke path is not tested here — it requires live LLM
-and A2A services. Instead we verify the routing logic is correct.
+services. Instead we verify the routing logic is correct.
 """
 
 import pytest
 
-from contract_analyzer.config import config
 from contract_analyzer.models.output import (
     ClauseType,
     EscalationTicket,
     Finding,
     ParsedClause,
     RiskLevel,
-    StandardRef,
     VerificationFlag,
     VerificationReport,
 )
@@ -48,9 +46,7 @@ def _make_state(**overrides) -> dict:
         "specialist_domain": "",
         "routing_decision": "",
         "routing_reason": "",
-        "risk_agent_url": config.risk_agent_url,
         "job_status": "pending",
-        "status_callback_url": None,
     }
     state.update(overrides)
     return state
@@ -62,7 +58,7 @@ def orch():
 
 
 class TestRouteAfterParse:
-    def test_route_to_classify(self, orch):
+    def test_route_to_evaluate_risk(self, orch):
         state = _make_state(
             clauses=[
                 ParsedClause(
@@ -73,7 +69,7 @@ class TestRouteAfterParse:
             ]
         )
         result = orch._route_after_parse(state)
-        assert result == "classify_content"
+        assert result == "evaluate_risk"
 
     def test_route_to_error_on_empty_clauses(self, orch):
         state = _make_state(clauses=[])
@@ -86,21 +82,9 @@ class TestRouteAfterParse:
         result = orch._route_after_parse(state)
         assert result == "handle_error"
 
-
-class TestRouteAfterClassify:
-    def test_route_to_risk(self, orch):
-        state = _make_state(routing_decision="generalist")
-        result = orch._route_after_classify(state)
-        assert result == "evaluate_risk"
-
-    def test_route_to_human_review_when_blocked(self, orch):
+    def test_route_to_error_when_blocked(self, orch):
         state = _make_state(routing_decision="block")
-        result = orch._route_after_classify(state)
-        assert result == "human_review"
-
-    def test_route_to_error(self, orch):
-        state = _make_state(errors=["Classification failed"])
-        result = orch._route_after_classify(state)
+        result = orch._route_after_parse(state)
         assert result == "handle_error"
 
 

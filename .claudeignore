@@ -74,3 +74,30 @@ Thumbs.db
 
 # Claude local settings (may contain secrets)
 .claude/settings.local.json
+.claude/welcome-approved
+
+# Playwright test artifacts
+.playwright-mcp/
+
+# Test coverage
+htmlcov/
+.coverage
+coverage.xml
+
+# Logs
+*.log
+logs/
+
+# Jupyter notebooks (large outputs)
+*.ipynb
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+*.cer

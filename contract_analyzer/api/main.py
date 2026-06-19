@@ -1,6 +1,8 @@
-"""FastAPI application for Contract Compliance Analyzer.
+"""FastAPI application for Contract Regulatory Compliance Scanner.
 
-Serves the REST API and the enterprise operations console.
+Scans contracts against 17 regulatory standards (GDPR, HIPAA, PCI DSS,
+SOC 2, NIST CSF, etc.) using FAISS hybrid vector search with evidence-backed
+findings and hallucination detection.
 """
 
 from fastapi import FastAPI
@@ -14,9 +16,9 @@ setup_logging()
 logger = AuditLogger(__name__, "api")
 
 app = FastAPI(
-    title="Contract Compliance Analyzer",
-    description="Multi-Agent Contract Risk and Obligation Intelligence System",
-    version="1.0.0",
+    title="Contract Regulatory Compliance Scanner",
+    description="Scan contracts against 17 regulatory standards with FAISS hybrid retrieval, ReAct agent analysis, and hallucination detection.",
+    version="2.0.0",
 )
 
 app.add_middleware(
@@ -41,4 +43,4 @@ async def startup():
 
 @app.get("/api/v1/health")
 async def health():
-    return {"status": "healthy", "service": "Contract Compliance Analyzer", "version": "1.0.0"}
+    return {"status": "healthy", "service": "Contract Regulatory Compliance Scanner", "version": "2.0.0"}

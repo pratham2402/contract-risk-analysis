@@ -9,31 +9,24 @@ Pipeline:
        → evaluate_risk → verify_findings → [verification gate]
        → generate_decisions → finalize → END
 
-Only the Risk & Compliance agent uses the A2A protocol — it's the only
-component that runs a genuine ReAct reasoning loop with tool calling.
-The other components are direct LLM calls run in-process.
+All components run in-process. The Risk & Compliance agent uses a ReAct
+reasoning loop with tool calling; other components are single-pass LLM calls.
 """
 
-import asyncio
 import json
 import time
 from datetime import UTC, datetime
 from typing import Any, Literal
-from uuid import uuid4
 
-from a2a.client.client import ClientCallContext
-from a2a.client.client_factory import create_client
-from a2a.types import (
-    Message,
-    Part,
-    Role,
-    SendMessageConfiguration,
-    SendMessageRequest,
-)
 from langgraph.graph import END, START, StateGraph
 
 from contract_analyzer.agents.contract_understanding import processor as contract_processor
 from contract_analyzer.agents.decision_recommendation import decision_processor
+from contract_analyzer.agents.risk_compliance import (
+    risk_processor,
+    risk_processor_financial,
+    risk_processor_privacy,
+)
 from contract_analyzer.agents.verification import verification_processor
 from contract_analyzer.config import config
 from contract_analyzer.logging_setup import AuditLogger
@@ -48,87 +41,27 @@ from contract_analyzer.models.state import OrchestratorState
 
 logger = AuditLogger(__name__, "orchestrator")
 
-DEFAULT_TIMEOUT = 120.0  # seconds per A2A agent call
-
 
 class Orchestrator:
     """LangGraph-based orchestrator with dynamic routing and verification."""
 
     def __init__(self) -> None:
         self.workflow = self._build_workflow()
-        self._clients: dict[str, Any] = {}
-        self._client_lock = asyncio.Lock()
 
-    async def _get_client(self, url: str, name: str) -> Any:
-        """Get or lazily create an A2A client for the given agent URL."""
-        if name not in self._clients:
-            async with self._client_lock:
-                if name not in self._clients:
-                    self._clients[name] = await create_client(url)
-                    logger.info(f"Created A2A client for {name}", url=url)
-        return self._clients[name]
-
-    async def _call_agent(
-        self, agent_url: str, agent_name: str, payload: str
-    ) -> dict:
-        """Call an A2A agent and return the structured result."""
-        start = time.monotonic()
-
-        client = await self._get_client(agent_url, agent_name)
-
-        message = Message(
-            message_id=str(uuid4()),
-            role=Role.ROLE_USER,
-            parts=[Part(text=payload, media_type="text/plain")],
-        )
-
-        request = SendMessageRequest(
-            message=message,
-            configuration=SendMessageConfiguration(return_immediately=False),
-        )
-
-        result_text = ""
-        ctx = ClientCallContext(timeout=DEFAULT_TIMEOUT)
-        async for stream_response in client.send_message(request, context=ctx):
-            if stream_response.HasField("task"):
-                for artifact in stream_response.task.artifacts:
-                    for part in artifact.parts:
-                        if part.text:
-                            result_text += part.text
-            elif stream_response.HasField("message"):
-                for part in stream_response.message.parts:
-                    if part.text:
-                        result_text += part.text
-            elif stream_response.HasField("artifact_update"):
-                for part in stream_response.artifact_update.artifact.parts:
-                    if part.text:
-                        result_text += part.text
-
-        try:
-            result = json.loads(result_text) if result_text else {}
-        except json.JSONDecodeError:
-            result = {"raw_response": result_text}
-
-        duration_ms = (time.monotonic() - start) * 1000
-        logger.agent_call(agent_name, "a2a_call", duration_ms, True)
-
-        return result
-
-    async def close(self) -> None:
-        """Close all A2A client connections."""
-        for name, client in self._clients.items():
-            try:
-                await client.close()
-            except Exception:
-                pass
-        self._clients.clear()
+    def _pick_risk_processor(self, state: OrchestratorState):
+        """Return the risk processor for the selected specialist domain."""
+        specialist = state.get("specialist_domain", "generalist")
+        if specialist == "privacy":
+            return risk_processor_privacy
+        elif specialist == "financial":
+            return risk_processor_financial
+        return risk_processor
 
     def _build_workflow(self) -> StateGraph:
         """Build the dynamic LangGraph StateGraph for contract analysis."""
         graph = StateGraph(dict)
 
         graph.add_node("parse_contract", self._node_parse_contract)
-        graph.add_node("classify_content", self._node_classify_content)
         graph.add_node("evaluate_risk", self._node_evaluate_risk)
         graph.add_node("verify_findings", self._node_verify_findings)
         graph.add_node("generate_decisions", self._node_generate_decisions)
@@ -141,13 +74,7 @@ class Orchestrator:
         graph.add_conditional_edges(
             "parse_contract",
             self._route_after_parse,
-            {"classify_content": "classify_content", "handle_error": "handle_error"},
-        )
-
-        graph.add_conditional_edges(
-            "classify_content",
-            self._route_after_classify,
-            {"evaluate_risk": "evaluate_risk", "human_review": "human_review", "handle_error": "handle_error"},
+            {"evaluate_risk": "evaluate_risk", "handle_error": "handle_error"},
         )
 
         graph.add_conditional_edges(
@@ -183,7 +110,7 @@ class Orchestrator:
     # ── Node implementations ─────────────────────────────────
 
     async def _node_parse_contract(self, state: OrchestratorState) -> dict:
-        """Parse contract via direct LLM call (not an agentic operation)."""
+        """Parse contract via LLM, then classify content for specialist routing."""
         logger.info("Parsing contract", contract_name=state["contract_name"])
         state["current_stage"] = "parsing"
         state["job_status"] = "running"
@@ -216,29 +143,28 @@ class Orchestrator:
                 "contract_type": state["contract_type"],
                 "governing_law_extracted": bool(state["governing_law"]),
             })
+
+            # ── Classify content for specialist routing (keyword-based) ──
+            self._classify_for_routing(state)
+
         except Exception as e:
             state["errors"].append(f"Contract parsing failed: {e}")
             logger.error(f"Contract parsing failed: {e}")
 
         return state
 
-    async def _node_classify_content(self, state: OrchestratorState) -> dict:
-        """Classify contract content to determine specialist routing."""
-        logger.info("Classifying contract content for routing")
-        state["current_stage"] = "classifying"
-        state["audit_trail"].append({
-            "timestamp": datetime.now(UTC).isoformat(),
-            "stage": "content_classification",
-            "action": "analyzing_contract_domain",
-        })
+    def _classify_for_routing(self, state: OrchestratorState) -> None:
+        """Simple keyword-based classification to pick specialist risk agent.
 
+        Merged into parse_contract — not a separate node since it's deterministic
+        keyword matching, not an agentic operation.
+        """
         contract_type = (state.get("contract_type") or "").lower()
         subject_matter = (state.get("subject_matter") or "").lower()
         raw_data = [d.lower().replace("_", " ") for d in (state.get("data_involved") or [])]
-        contract_text = (state.get("contract_text") or "").lower()
+        contract_text = (state.get("contract_text") or "").lower()[:5000]
 
-        # Build a combined search text from metadata + first 5KB of contract
-        combined_text = f"{contract_type} {subject_matter} {' '.join(raw_data)} {contract_text[:5000]}"
+        combined_text = f"{contract_type} {subject_matter} {' '.join(raw_data)} {contract_text}"
 
         privacy_signals = [
             "data protection", "data processing", "personal data",
@@ -254,69 +180,41 @@ class Orchestrator:
             "payment", "tax", "invoice",
         ]
 
-        privacy_score = sum(
-            1 for sig in privacy_signals
-            if sig in combined_text
-        )
-        financial_score = sum(
-            1 for sig in financial_signals
-            if sig in combined_text
-        )
-
-        logger.info(
-            "Classification scores",
-            privacy_score=privacy_score,
-            financial_score=financial_score,
-            contract_type=contract_type,
-            data_involved=raw_data[:5],
-        )
+        privacy_score = sum(1 for sig in privacy_signals if sig in combined_text)
+        financial_score = sum(1 for sig in financial_signals if sig in combined_text)
 
         if privacy_score >= 2:
             specialist = "privacy"
-            reason = f"Contract has privacy signals (score={privacy_score}, data_involved={raw_data[:3]})"
         elif financial_score >= 2:
             specialist = "financial"
-            reason = f"Contract has financial compliance signals (score={financial_score}, subject={subject_matter})"
         else:
             specialist = "generalist"
-            reason = "Contract does not strongly signal privacy or financial domain"
-
-        risk_url = {
-            "privacy": config.risk_privacy_agent_url,
-            "financial": config.risk_financial_agent_url,
-        }.get(specialist, config.risk_agent_url)
 
         state["specialist_domain"] = specialist
         state["routing_decision"] = specialist
-        state["routing_reason"] = reason
-        state["risk_agent_url"] = risk_url
+        state["routing_reason"] = (
+            f"privacy_score={privacy_score}, financial_score={financial_score}"
+        )
 
         state["audit_trail"].append({
             "timestamp": datetime.now(UTC).isoformat(),
             "stage": "content_classification",
             "action": "routing_decided",
             "specialist": specialist,
-            "risk_agent_url": risk_url,
-            "reason": reason,
+            "privacy_score": privacy_score,
+            "financial_score": financial_score,
         })
 
-        logger.info(
-            "Content classified",
-            specialist=specialist,
-            privacy_score=privacy_score,
-            financial_score=financial_score,
-        )
-
-        return state
+        logger.info("Content classified", specialist=specialist,
+                    privacy_score=privacy_score, financial_score=financial_score)
 
     async def _node_evaluate_risk(self, state: OrchestratorState) -> dict:
-        """Evaluate risk via the Risk & Compliance Agent (A2A).
+        """Evaluate risk via the Risk & Compliance Agent (ReAct loop with tools).
 
-        This is the only genuinely agentic component — the LLM runs a ReAct
-        loop with dynamic tool calling, so it must run as a separate service.
+        Runs in-process — the LLM uses a ReAct reasoning loop with dynamic
+        tool calling to retrieve standards and produce findings.
         """
         specialist = state.get("specialist_domain", "generalist")
-        risk_url = state.get("risk_agent_url", config.risk_agent_url)
         state["current_stage"] = "risk_evaluation"
 
         state["audit_trail"].append({
@@ -324,10 +222,9 @@ class Orchestrator:
             "stage": "risk_evaluation",
             "action": "calling_risk_agent",
             "specialist": specialist,
-            "agent_url": risk_url,
         })
 
-        contract_context = json.dumps({
+        clauses_json = json.dumps({
             "clauses": [c.model_dump() for c in state["clauses"]],
             "contract_name": state.get("contract_name", ""),
             "governing_law": state.get("governing_law", ""),
@@ -338,11 +235,8 @@ class Orchestrator:
         })
 
         try:
-            result = await self._call_agent(
-                risk_url,
-                f"risk_compliance_{specialist}",
-                contract_context,
-            )
+            processor = self._pick_risk_processor(state)
+            result = await processor.process(clauses_json)
 
             findings = [Finding(**f) for f in result.get("findings", [])]
             state["findings"] = findings
@@ -557,22 +451,15 @@ class Orchestrator:
 
     def _route_after_parse(
         self, state: OrchestratorState
-    ) -> Literal["classify_content", "handle_error"]:
+    ) -> Literal["evaluate_risk", "handle_error"]:
         if state.get("errors"):
             return "handle_error"
         if not state.get("clauses"):
             state["errors"].append("No clauses extracted from contract text")
             return "handle_error"
-        return "classify_content"
-
-    def _route_after_classify(
-        self, state: OrchestratorState
-    ) -> Literal["evaluate_risk", "human_review", "handle_error"]:
-        if state.get("errors"):
-            return "handle_error"
         if state.get("routing_decision") == "block":
             state["errors"].append("Contract domain blocked: cannot be analyzed automatically")
-            return "human_review"
+            return "handle_error"
         return "evaluate_risk"
 
     def _route_after_risk(
@@ -623,7 +510,6 @@ class Orchestrator:
         contract_text: str,
         contract_name: str = "",
         verification_enabled: bool | None = None,
-        status_callback_url: str | None = None,
     ) -> ContractAnalysis:
         """Run the full contract analysis pipeline."""
         total_start = time.monotonic()
@@ -656,9 +542,7 @@ class Orchestrator:
             "specialist_domain": "",
             "routing_decision": "",
             "routing_reason": "",
-            "risk_agent_url": config.risk_agent_url,
             "job_status": "pending",
-            "status_callback_url": status_callback_url,
         }
 
         logger.info(
@@ -697,50 +581,6 @@ class Orchestrator:
         )
 
         return analysis
-
-    async def submit(
-        self,
-        contract_text: str,
-        contract_name: str = "",
-        verification_enabled: bool | None = None,
-        status_callback_url: str | None = None,
-    ) -> dict:
-        """Submit an analysis job and return immediately with a job ID."""
-        job_id = str(uuid4())
-
-        asyncio.create_task(
-            self._run_job(
-                job_id=job_id,
-                contract_text=contract_text,
-                contract_name=contract_name,
-                verification_enabled=verification_enabled,
-                status_callback_url=status_callback_url,
-            )
-        )
-
-        logger.info("Analysis job submitted", job_id=job_id, name=contract_name)
-        return {"job_id": job_id, "status": "pending", "contract_name": contract_name}
-
-    async def _run_job(
-        self,
-        job_id: str,
-        contract_text: str,
-        contract_name: str,
-        verification_enabled: bool | None,
-        status_callback_url: str | None,
-    ) -> None:
-        """Background job runner."""
-        try:
-            await self.analyze(
-                contract_text=contract_text,
-                contract_name=contract_name,
-                verification_enabled=verification_enabled,
-                status_callback_url=status_callback_url,
-            )
-            logger.info("Background job completed", job_id=job_id)
-        except Exception as e:
-            logger.error(f"Background job failed: {e}", job_id=job_id)
-
 
 # Global orchestrator instance (clients created lazily)
 orchestrator = Orchestrator()

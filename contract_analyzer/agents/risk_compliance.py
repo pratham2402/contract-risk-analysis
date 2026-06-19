@@ -19,7 +19,6 @@ from langchain_openai import ChatOpenAI
 from contract_analyzer.agents.react_graph import (
     REACT_SYSTEM_PROMPT,
     AgentState,
-    ClauseLookupTool,
     build_react_agent,
 )
 from contract_analyzer.agents.tools import RISK_AGENT_TOOLS
@@ -188,6 +187,29 @@ class RiskComplianceProcessor:
         final_output = final_state.get("final_output", {})
         iteration_count = final_state.get("iteration_count", 0)
 
+        # ── Collect retrieved evidence from tool messages ─────────
+        retrieved_evidence: list[dict] = []
+        seen_keys: set[str] = set()
+        for msg in final_state.get("messages", []):
+            if hasattr(msg, "content") and hasattr(msg, "name") and msg.name == "retrieve_standards":
+                try:
+                    data = json.loads(msg.content) if isinstance(msg.content, str) else msg.content
+                    for r in data.get("results", []):
+                        key = f"{r.get('standard', '')}|{r.get('article') or 'none'}"
+                        if key not in seen_keys:
+                            seen_keys.add(key)
+                            retrieved_evidence.append({
+                                "standard": r.get("standard", ""),
+                                "article": r.get("article"),
+                                "title": r.get("title", ""),
+                                "content": r.get("content", ""),
+                                "score": r.get("score", 0),
+                                "jurisdiction": r.get("jurisdiction", "Global"),
+                                "category": r.get("category", "general"),
+                            })
+                except (json.JSONDecodeError, TypeError, AttributeError):
+                    pass
+
         # Parse findings into Pydantic models
         data = final_output if isinstance(final_output, dict) else {}
         findings = []
@@ -236,7 +258,7 @@ class RiskComplianceProcessor:
         return {
             "findings": [f.model_dump() for f in findings],
             "total_findings": len(findings),
-            "standards_consulted": 0,  # LLM decides retrieval, count not meaningful
+            "retrieved_evidence": retrieved_evidence,
             "jurisdiction_analysis": data.get("jurisdiction_analysis", {}),
             "standards_applicability": data.get("standards_applicability", []),
             "processing_time_ms": duration_ms,

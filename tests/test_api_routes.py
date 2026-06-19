@@ -5,7 +5,6 @@ import json
 import pytest
 
 from contract_analyzer.api.routes import (
-    ContractListItem,
     ContractSubmitRequest,
     ContractSubmitResponse,
     JobStatusResponse,
@@ -119,19 +118,3 @@ class TestJobStatusResponse:
         assert resp.status == "failed"
         assert resp.error == "Analysis failed: timeout"
 
-
-class TestContractListItem:
-    def test_fields(self):
-        item = ContractListItem(
-            id="c1",
-            name="Contract A",
-            status="completed",
-            created_at="2026-01-01T00:00:00Z",
-            total_duration_ms=1200.0,
-            clause_count=10,
-            finding_count=5,
-            recommendation_count=3,
-            summary={"risk_counts": {"high": 2}},
-        )
-        assert item.name == "Contract A"
-        assert item.clause_count == 10

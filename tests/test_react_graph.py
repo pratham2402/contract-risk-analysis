@@ -3,13 +3,9 @@
 These test pure functions — no LLM calls, no API keys required.
 """
 
-import json
-
 import pytest
-from langchain_core.messages import ToolMessage
 
 from contract_analyzer.agents.react_graph import (
-    ClauseLookupTool,
     _extract_json_from_text,
     _repair_and_parse,
 )
@@ -213,78 +209,3 @@ class TestRepairAndParse:
         result = _repair_and_parse('[1, 2, 3]')
         assert result is None
 
-
-class TestClauseLookupTool:
-    @pytest.fixture
-    def clauses(self):
-        return [
-            {
-                "id": "c1",
-                "title": "Confidentiality Obligations",
-                "clause_type": "confidentiality",
-                "text": "Receiving Party shall hold all info in strict confidence.",
-            },
-            {
-                "id": "c2",
-                "title": "Limitation of Liability",
-                "clause_type": "liability",
-                "text": "Total liability shall not exceed fees paid in 12 months.",
-            },
-            {
-                "id": "c3",
-                "title": "Data Protection",
-                "clause_type": "data_protection",
-                "text": "Personal data shall be encrypted using TLS 1.3 and AES-256.",
-            },
-        ]
-
-    @pytest.fixture
-    def lookup(self, clauses):
-        return ClauseLookupTool(clauses)
-
-    def test_found_clause(self, lookup):
-        msg = ToolMessage(
-            content=json.dumps({"status": "requested", "clause_id": "c2"}),
-            tool_call_id="tc1",
-        )
-        enriched = lookup.enrich_observation(msg)
-        content = json.loads(enriched.content)
-        assert content["status"] == "found"
-        assert content["title"] == "Limitation of Liability"
-        assert "fees paid" in content["text"]
-
-    def test_not_found_clause(self, lookup):
-        msg = ToolMessage(
-            content=json.dumps({"status": "requested", "clause_id": "nonexistent"}),
-            tool_call_id="tc2",
-        )
-        enriched = lookup.enrich_observation(msg)
-        content = json.loads(enriched.content)
-        assert content["status"] == "not_found"
-        assert "c1" in content["message"]
-        assert "c2" in content["message"]
-        assert "c3" in content["message"]
-
-    def test_non_retrieve_clause_message_passes_through(self, lookup):
-        msg = ToolMessage(
-            content=json.dumps({"status": "ok", "results": [{"standard": "GDPR"}]}),
-            tool_call_id="tc3",
-        )
-        result = lookup.enrich_observation(msg)
-        assert result is msg  # same object, not modified
-
-    def test_non_json_message_passes_through(self, lookup):
-        msg = ToolMessage(content="Plain text response", tool_call_id="tc4")
-        result = lookup.enrich_observation(msg)
-        assert result is msg
-
-    def test_empty_clauses(self):
-        lookup = ClauseLookupTool([])
-        msg = ToolMessage(
-            content=json.dumps({"status": "requested", "clause_id": "c1"}),
-            tool_call_id="tc5",
-        )
-        enriched = lookup.enrich_observation(msg)
-        content = json.loads(enriched.content)
-        assert content["status"] == "not_found"
-        assert "[]" in content["message"] or "Available IDs: []" in content["message"]

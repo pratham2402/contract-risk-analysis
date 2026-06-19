@@ -9,7 +9,6 @@ from contract_analyzer.agents.tools import (
     compare_jurisdictions,
     escalate_to_human,
     request_more_context,
-    retrieve_clause,
 )
 
 
@@ -18,7 +17,6 @@ class TestToolDefinitions:
         tool_names = {t.name for t in RISK_AGENT_TOOLS}
         expected = {
             "retrieve_standards",
-            "retrieve_clause",
             "compare_jurisdictions",
             "escalate_to_human",
             "request_more_context",
@@ -33,14 +31,6 @@ class TestToolDefinitions:
         from langchain_core.tools import BaseTool
         for tool in RISK_AGENT_TOOLS:
             assert isinstance(tool, BaseTool), f"{tool.name} is not a BaseTool"
-
-
-class TestRetrieveClause:
-    def test_returns_requested_status(self):
-        result = retrieve_clause.invoke({"clause_id": "c1"})
-        data = json.loads(result)
-        assert data["status"] == "requested"
-        assert data["clause_id"] == "c1"
 
 
 class TestEscalateToHuman:

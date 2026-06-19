@@ -12,7 +12,7 @@ from langchain_openai import ChatOpenAI
 
 from contract_analyzer.config import config
 from contract_analyzer.logging_setup import AuditLogger
-from contract_analyzer.models.output import Decision, Finding, Owner, Recommendation, RiskLevel
+from contract_analyzer.models.output import Decision, Owner, Recommendation, RiskLevel
 
 logger = AuditLogger(__name__, "decision_recommendation_agent")
 

@@ -2,12 +2,14 @@
 
 Provides in-memory job tracking with optional Redis backend. Jobs are
 submitted via the orchestrator's submit() method and processed
-asynchronously. Status and results can be polled by job ID.
+asynchronously. Status and results can be polled by job ID, and SSE
+events can be streamed via the per-job event queue.
 """
 
 import asyncio
+import json
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timezone
 from typing import Any
 
 from contract_analyzer.logging_setup import AuditLogger
@@ -28,6 +30,11 @@ class Job:
     result: dict[str, Any] | None = None
     error: str | None = None
     status_callback_url: str | None = None
+    event_queue: asyncio.Queue | None = None
+
+    def __post_init__(self) -> None:
+        if self.event_queue is None:
+            self.event_queue = asyncio.Queue()
 
 
 class JobStore:
@@ -109,6 +116,35 @@ class JobStore:
                 del self._jobs[job_id]
                 return True
             return False
+
+    async def push_event(self, job_id: str, event_type: str,
+                         stage: str, status: str, message: str = "") -> None:
+        """Push an SSE event to a job's event queue.
+
+        Args:
+            job_id: Target job ID.
+            event_type: ``"stage"``, ``"trace"``, or ``"error"``.
+            stage: Pipeline stage name (parsing, classifying, etc.).
+            status: ``"started"``, ``"in_progress"``, ``"completed"``, or ``"failed"``.
+            message: Human-readable detail.
+        """
+        async with self._lock:
+            job = self._jobs.get(job_id)
+        if job and job.event_queue:
+            event = {
+                "type": event_type,
+                "stage": stage,
+                "status": status,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "message": message,
+            }
+            await job.event_queue.put(json.dumps(event))
+
+
+async def push_job_event(job_id: str, event_type: str,
+                         stage: str, status: str, message: str = "") -> None:
+    """Convenience: push an SSE event to the global job store."""
+    await job_store.push_event(job_id, event_type, stage, status, message)
 
 
 # Global job store instance

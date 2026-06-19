@@ -1,9 +1,7 @@
 langgraph>=0.2.0
 langchain>=0.3.0
 langchain-openai>=0.2.0
-a2a-sdk>=1.0.0
-protobuf>=5.29.5,<6
-sse-starlette>=3.0.0
+# (removed a2a-sdk, protobuf, sse-starlette — unused after simplification)
 starlette>=0.38.0
 uvicorn>=0.30.0
 fastapi>=0.115.0

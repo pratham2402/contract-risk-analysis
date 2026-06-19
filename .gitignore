@@ -35,3 +35,24 @@ Thumbs.db
 
 # Claude
 .claude/settings.local.json
+.claude/welcome-approved
+
+# Playwright
+.playwright-mcp/
+
+# Test coverage
+htmlcov/
+.coverage
+coverage.xml
+
+# Logs
+*.log
+logs/
+
+# Jupyter
+*.ipynb
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3

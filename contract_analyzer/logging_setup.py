@@ -3,7 +3,6 @@
 import json
 import logging
 import sys
-import time
 import uuid
 from datetime import UTC, datetime
 from typing import Any

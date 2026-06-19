@@ -42,7 +42,6 @@ Thought: Analyze what you know and what you need to know. State your reasoning c
 
 Action: Invoke ONE tool at a time. Choose the most useful next step.
   - retrieve_standards: when you need regulatory or legal context
-  - retrieve_clause: when you need to re-read exact clause text
   - compare_jurisdictions: when you need to check cross-jurisdictional issues
   - escalate_to_human: when you cannot reach a confident conclusion
   - request_more_context: when the contract metadata is insufficient
@@ -187,50 +186,6 @@ def _should_continue(
 
 def _should_continue_sync(state: AgentState) -> str:
     return _should_continue(state)
-
-
-class ClauseLookupTool:
-    """Injects clause text into tool observations when retrieve_clause is called.
-
-    This is not an LLM-visible tool but a post-processing hook on the
-    ToolNode output. When the LLM calls retrieve_clause(clause_id=X),
-    this interceptor replaces the generic response with actual clause text.
-    """
-
-    def __init__(self, clauses: list[dict[str, Any]]):
-        self._clause_map: dict[str, dict] = {
-            c.get("id", ""): c for c in clauses
-        }
-
-    def enrich_observation(self, tool_message: ToolMessage) -> ToolMessage:
-        """If this is a retrieve_clause response, inject the actual clause text."""
-        try:
-            content = json.loads(tool_message.content)
-        except (json.JSONDecodeError, TypeError):
-            return tool_message
-
-        if content.get("status") != "requested":
-            return tool_message
-
-        clause_id = content.get("clause_id", "")
-        clause = self._clause_map.get(clause_id)
-        if clause:
-            tool_message.content = json.dumps({
-                "status": "found",
-                "clause_id": clause_id,
-                "title": clause.get("title", ""),
-                "clause_type": clause.get("clause_type", ""),
-                "text": clause.get("text", ""),
-            })
-        else:
-            tool_message.content = json.dumps({
-                "status": "not_found",
-                "clause_id": clause_id,
-                "message": f"No clause found with ID '{clause_id}'. "
-                           f"Available IDs: {list(self._clause_map.keys())[:10]}",
-            })
-
-        return tool_message
 
 
 def build_react_agent(

@@ -8,9 +8,7 @@ escalate_to_human which creates an audit ticket.
 from langchain_core.tools import tool
 
 from contract_analyzer.logging_setup import AuditLogger
-from contract_analyzer.models.output import EscalationTicket
 from contract_analyzer.retrieval.hybrid_retriever import query_standards_hybrid
-from contract_analyzer.retrieval.standards_index import query_standards
 
 logger = AuditLogger(__name__, "risk_agent_tools")
 
@@ -84,31 +82,6 @@ def retrieve_standards(
             for r in results
         ],
     }, default=str)
-
-
-@tool
-def retrieve_clause(clause_id: str) -> str:
-    """Retrieve the full text and metadata of a specific contract clause
-    by its ID. Use this when you need to re-examine exact clause wording
-    before applying a standard you just retrieved.
-
-    Args:
-        clause_id: The clause ID from the contract clauses list.
-
-    Returns:
-        JSON string with the clause's full text, type, title, and metadata.
-    """
-    import json
-
-    logger.info(f"Tool: retrieve_clause clause_id={clause_id}")
-
-    # The clause lookup happens via context injection in the agent
-    return json.dumps({
-        "status": "requested",
-        "clause_id": clause_id,
-        "message": "Clause lookup requested. The clause text will be provided "
-                   "in the next observation if available.",
-    })
 
 
 @tool
@@ -238,7 +211,6 @@ def request_more_context(reason: str) -> str:
 # All tools exposed to the LLM
 RISK_AGENT_TOOLS = [
     retrieve_standards,
-    retrieve_clause,
     compare_jurisdictions,
     escalate_to_human,
     request_more_context,

@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-"""End-to-end demo of Contract Compliance Analyzer.
+"""End-to-end demo of Contract Regulatory Compliance Scanner.
 
 Demonstrates the full pipeline:
-  1. Contract parsing (Contract Understanding Agent via A2A)
-  2. Risk evaluation (Risk & Compliance Agent via A2A + vector DB)
-  3. Decision generation (Decision & Recommendation Agent via A2A)
-  4. Structured output with standards references
+  1. Contract parsing — extract clauses, parties, governing law
+  2. Risk evaluation — ReAct agent retrieves and applies regulatory standards
+  3. Verification — cross-reference findings against retrieved evidence
+  4. Decision generation — prioritized recommendations with owner assignments
 
 Usage:
     python scripts/demo.py                    # run with sample NDA
     python scripts/demo.py --contract data/sample_contracts/risky_saas.txt
-    python scripts/demo.py --server           # also start all agent servers first
 """
 
 import argparse
