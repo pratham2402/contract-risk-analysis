@@ -141,7 +141,7 @@ Single process — all components run in-process on port 8000.
 
 ```bash
 python scripts/demo.py
-python scripts/demo.py --contract data/sample_contracts/risky_saas.txt
+python scripts/demo.py --contract data/sample_contracts/risky_saas.pdf
 ```
 
 ---

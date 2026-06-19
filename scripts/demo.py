@@ -9,7 +9,8 @@ Demonstrates the full pipeline:
 
 Usage:
     python scripts/demo.py                    # run with sample NDA
-    python scripts/demo.py --contract data/sample_contracts/risky_saas.txt
+    python scripts/demo.py --contract data/sample_contracts/risky_saas.pdf
+    python scripts/demo.py --contract data/sample_contracts/standard_nda.pdf
 """
 
 import argparse
@@ -26,14 +27,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from contract_analyzer.config import config
+from contract_analyzer.document_parser import extract_text
 from contract_analyzer.logging_setup import AuditLogger, setup_logging
 from contract_analyzer.orchestrator.workflow import orchestrator
 
 setup_logging()
 logger = AuditLogger("demo", "demo_runner")
 
-SAMPLE_NDA = str(Path(__file__).parent.parent / "data" / "sample_contracts" / "standard_nda.txt")
-SAMPLE_SAAS = str(Path(__file__).parent.parent / "data" / "sample_contracts" / "risky_saas.txt")
+SAMPLE_NDA = str(Path(__file__).parent.parent / "data" / "sample_contracts" / "standard_nda.pdf")
+SAMPLE_SAAS = str(Path(__file__).parent.parent / "data" / "sample_contracts" / "risky_saas.pdf")
 
 
 def print_header(text: str) -> None:
@@ -82,7 +84,15 @@ def print_recommendation(r, idx: int) -> None:
 
 
 async def run_demo(contract_path: str, contract_name: str = "") -> None:
-    contract_text = Path(contract_path).read_text()
+    path = Path(contract_path)
+    suffix = path.suffix.lower()
+
+    if suffix == ".pdf":
+        contract_text = extract_text(path.read_bytes(), path.name)
+    elif suffix == ".txt":
+        contract_text = path.read_text()
+    else:
+        contract_text = extract_text(path.read_bytes(), path.name)
     if not contract_name:
         contract_name = Path(contract_path).name
 

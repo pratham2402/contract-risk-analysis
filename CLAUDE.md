@@ -27,7 +27,7 @@ pip install -r requirements.txt
 
 # Demo
 ./venv/bin/python scripts/demo.py
-./venv/bin/python scripts/demo.py --contract data/sample_contracts/risky_saas.txt
+./venv/bin/python scripts/demo.py --contract data/sample_contracts/risky_saas.pdf
 
 # Health check
 curl -s http://127.0.0.1:8000/api/v1/health
