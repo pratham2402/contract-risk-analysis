@@ -12,7 +12,7 @@ This is a **regulatory compliance scanner**, not a general contract risk analyze
 
 ```
 FastAPI API (port 8000)
-  └─ LangGraph StateGraph Pipeline (7 nodes, 6 stages)
+  └─ LangGraph StateGraph Pipeline (6 stages)
        ├─ parse_contract ── LLM extracts clauses + classifies content
        ├─ evaluate_risk  ── ReAct agent (4 tools, dynamic FAISS+BM25 retrieval)
        ├─ verify_findings ── LLM cross-references citations vs retrieved evidence
@@ -203,7 +203,7 @@ scripts/
   demo.py                     # End-to-end pipeline demo
 data/
   sample_contracts/           # Sample NDA and SaaS contracts
-tests/                        # pytest suite (161 tests)
+tests/                        # pytest suite (156 tests)
 ```
 
 ---
