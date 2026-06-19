@@ -128,12 +128,12 @@ async def analyze_contract(request: Request):
       - Multipart form: file=<upload> + name=<optional>
 
     Pipeline:
-    1. Parse contract — extract clauses, parties, governing law
-    2. Classify content — route to privacy/financial/generalist specialist
-    3. Evaluate risk — ReAct agent with FAISS+BM25 retrieval across 17 standards
-    4. Verify findings — cross-reference citations against retrieved evidence
-    5. Generate decisions — prioritized recommendations with owner assignments
-    6. Return the complete analysis
+    1. Parse contract + classify — extract clauses, parties, governing law, then
+       keyword-route to privacy/financial/generalist specialist
+    2. Evaluate risk — ReAct agent with FAISS+BM25 retrieval across 17 standards
+    3. Verify findings — cross-reference citations against retrieved evidence
+    4. Generate decisions — prioritized recommendations with owner assignments
+    5. Return the complete analysis
 
     For async processing with SSE streaming, use POST /analyze/async
     """
@@ -246,7 +246,7 @@ async def _submit_async(contract_text: str, contract_name: str) -> JobSubmitResp
         contract_name=contract_name,
     )
 
-    # Store contract text in job for worker pickup
+    # Store contract text in job for async processing
     job = await job_store.get(job_id)
     if job:
         job.result = {"contract_text": contract_text}

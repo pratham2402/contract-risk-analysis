@@ -76,10 +76,15 @@ class StandardsIndex:
 
         Index files are keyed by embedding model name to avoid collisions
         when switching between general-purpose and legal-domain models.
+        If a custom path is provided, use it as-is (no model slug appended).
         """
-        path = path or config.faiss_index_path
-        model_slug = config.embedding_model.replace("/", "_").replace("-", "_")
-        path = f"{path}_{model_slug}"
+        if path is not None:
+            # Custom path: use as-is
+            pass
+        else:
+            path = config.faiss_index_path
+            model_slug = config.embedding_model.replace("/", "_").replace("-", "_")
+            path = f"{path}_{model_slug}"
         self.load_model()
 
         idx_path = f"{path}.faiss"
@@ -189,10 +194,3 @@ def get_standards_index() -> StandardsIndex:
         index.save()
     _standards_index = index
     return _standards_index
-
-
-def query_standards(
-    text: str, top_k: int = 5, min_score: float = 0.2
-) -> list[dict]:
-    """Convenience function to query the standards index."""
-    return get_standards_index().query(text, top_k=top_k, min_score=min_score)

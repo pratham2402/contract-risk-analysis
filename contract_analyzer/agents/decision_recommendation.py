@@ -12,7 +12,7 @@ from langchain_openai import ChatOpenAI
 
 from contract_analyzer.config import config
 from contract_analyzer.logging_setup import AuditLogger
-from contract_analyzer.models.output import Decision, Owner, Recommendation, RiskLevel
+from contract_analyzer.models.output import Decision, Owner, Recommendation, RiskLevel, StandardRef
 
 logger = AuditLogger(__name__, "decision_recommendation_agent")
 
@@ -162,7 +162,6 @@ class DecisionRecommendationProcessor:
 
             std_refs = []
             for ref in item.get("referenced_standards", []):
-                from contract_analyzer.models.output import StandardRef
                 std_refs.append(
                     StandardRef(
                         standard=ref.get("standard", ""),

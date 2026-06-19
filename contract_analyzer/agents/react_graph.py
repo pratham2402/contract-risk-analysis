@@ -10,15 +10,14 @@ The LLM controls retrieval behavior within a bounded iteration cap.
 """
 
 import json
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, TypedDict
 
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_core.tools import BaseTool
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
-from typing_extensions import TypedDict
 
 from contract_analyzer.config import config
 from contract_analyzer.logging_setup import AuditLogger
@@ -124,7 +123,7 @@ class AgentState(TypedDict):
     contract_context: dict[str, Any]
     clauses: list[dict[str, Any]]
     tool_call_history: list[dict[str, Any]]
-    escaalation_tickets: list[dict[str, Any]]
+    escalation_tickets: list[dict[str, Any]]
     final_output: dict[str, Any]
 
 
@@ -165,7 +164,7 @@ def _should_continue(
 
     # If no tool calls and the message looks like a final answer, finalize.
     # Otherwise loop back for more reasoning.
-    content = getattr(last_message, "content", "") or ""
+    content = getattr(last_message, "content", "")
 
     if isinstance(content, str) and content.strip():
         # Only finalize if the content actually contains a JSON findings object
@@ -182,10 +181,6 @@ def _should_continue(
 
     # Default: let the LLM think more
     return "loop"
-
-
-def _should_continue_sync(state: AgentState) -> str:
-    return _should_continue(state)
 
 
 def build_react_agent(
@@ -232,7 +227,7 @@ def build_react_agent(
 
     graph.add_conditional_edges(
         "analyze",
-        _should_continue_sync,
+        _should_continue,
         {
             "execute_tools": "execute_tools",
             "finalize": "finalize",

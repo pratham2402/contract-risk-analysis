@@ -44,9 +44,9 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/analyze/async \
 ## Environment
 
 Copy `.env.example` to `.env` and set:
-- `LLM_PROVIDER` (default: `openai`; currently using `deepseek`)
 - `LLM_MODEL` (default: `gpt-4o`; currently using `deepseek-chat` for cost)
 - `OPENAI_API_KEY` (required)
+- `OPENAI_BASE_URL` (optional — set to DeepSeek endpoint for non-OpenAI providers)
 - `DATABASE_URL` (postgresql+asyncpg, optional — system runs without it)
 
 ## Architecture

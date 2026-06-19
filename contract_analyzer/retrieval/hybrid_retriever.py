@@ -107,7 +107,7 @@ class HybridRetriever:
         candidate_k = max(top_k * 3, 30)
 
         # Dense retrieval (FAISS supports metadata filtering on entry fields)
-        dense_results = self._faiss.query(query, top_k=candidate_k, min_score=0.0)
+        dense_results = self._faiss.query(query, top_k=candidate_k, min_score=min_score)
 
         # Sparse retrieval (BM25)
         sparse_results = self._bm25.query(

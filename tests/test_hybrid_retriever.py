@@ -4,8 +4,6 @@ These test the fusion algorithm and filter application in isolation.
 Index-building tests are skipped when no FAISS/BM25 data exists.
 """
 
-import math
-
 import pytest
 
 from contract_analyzer.retrieval.hybrid_retriever import _reciprocal_rank_fusion

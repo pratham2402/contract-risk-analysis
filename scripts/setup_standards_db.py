@@ -25,7 +25,6 @@ def main():
         "Building FAISS + BM25 standards indexes",
         model=config.embedding_model,
         output_path=config.faiss_index_path,
-        hybrid=config.use_hybrid_retrieval,
     )
 
     # 1. FAISS dense index

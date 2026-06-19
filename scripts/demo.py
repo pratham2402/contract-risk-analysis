@@ -28,7 +28,6 @@ load_dotenv()
 from contract_analyzer.config import config
 from contract_analyzer.logging_setup import AuditLogger, setup_logging
 from contract_analyzer.orchestrator.workflow import orchestrator
-from contract_analyzer.models.output import RiskLevel, Decision
 
 setup_logging()
 logger = AuditLogger("demo", "demo_runner")

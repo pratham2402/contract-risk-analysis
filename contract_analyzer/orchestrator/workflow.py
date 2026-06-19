@@ -1,12 +1,12 @@
-"""LangGraph Orchestrator Workflow — Dynamic Agentic Routing.
+"""LangGraph Orchestrator Workflow — Contract Compliance Pipeline.
 
-Coordinates the multi-agent contract analysis pipeline using LangGraph's
-StateGraph with conditional routing, specialist dispatch, verification gating,
-and human-review escalation paths.
+Coordinates the contract analysis pipeline using LangGraph's StateGraph with
+conditional routing, specialist dispatch, verification gating, and human-review
+escalation paths.
 
 Pipeline:
-  START → parse_contract → classify_content → [route specialist]
-       → evaluate_risk → verify_findings → [verification gate]
+  START → parse_contract (includes classification) → [route specialist]
+       → evaluate_risk → [verification gate] → verify_findings
        → generate_decisions → finalize → END
 
 All components run in-process. The Risk & Compliance agent uses a ReAct
@@ -127,9 +127,7 @@ class Orchestrator:
                 ParsedClause(**c) for c in result.get("clauses", [])
             ]
             state["governing_law"] = result.get("governing_law", "")
-            state["party_a_name"] = result.get("party_a_name", "")
             state["party_a_location"] = result.get("party_a_location", "")
-            state["party_b_name"] = result.get("party_b_name", "")
             state["party_b_location"] = result.get("party_b_location", "")
             state["contract_type"] = result.get("contract_type", "")
             state["subject_matter"] = result.get("subject_matter", "")
@@ -255,7 +253,7 @@ class Orchestrator:
                 "stage": "risk_evaluation",
                 "action": "risk_evaluation_complete",
                 "finding_count": len(findings),
-                "reaact_iterations": result.get("reaact_iterations", 0),
+                "react_iterations": result.get("react_iterations", 0),
                 "escalation_tickets": len(tickets),
                 "specialist": specialist,
             })
@@ -457,9 +455,6 @@ class Orchestrator:
         if not state.get("clauses"):
             state["errors"].append("No clauses extracted from contract text")
             return "handle_error"
-        if state.get("routing_decision") == "block":
-            state["errors"].append("Contract domain blocked: cannot be analyzed automatically")
-            return "handle_error"
         return "evaluate_risk"
 
     def _route_after_risk(
@@ -475,6 +470,8 @@ class Orchestrator:
             return "human_review"
         if not findings:
             return "finalize"
+        if tickets:
+            return "human_review"
         if state.get("verification_enabled", True):
             return "verify_findings"
         return "generate_decisions"

@@ -1,7 +1,5 @@
 """Tests for document text extraction."""
 
-import io
-
 import pytest
 
 from contract_analyzer.document_parser.extractor import (

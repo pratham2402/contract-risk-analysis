@@ -1,7 +1,5 @@
 """Tests for API route pydantic models (unit tests, no server needed)."""
 
-import json
-
 import pytest
 
 from contract_analyzer.api.routes import (

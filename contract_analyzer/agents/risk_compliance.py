@@ -251,7 +251,7 @@ class RiskComplianceProcessor:
             duration_ms,
             True,
             finding_count=len(findings),
-            reaact_iterations=iteration_count,
+            react_iterations=iteration_count,
             specialist=self.specialist_domain,
         )
 
@@ -262,7 +262,7 @@ class RiskComplianceProcessor:
             "jurisdiction_analysis": data.get("jurisdiction_analysis", {}),
             "standards_applicability": data.get("standards_applicability", []),
             "processing_time_ms": duration_ms,
-            "reaact_iterations": iteration_count,
+            "react_iterations": iteration_count,
         }
 
 # Global processor instances

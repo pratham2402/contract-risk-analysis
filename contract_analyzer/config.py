@@ -47,5 +47,12 @@ class Config:
     # File upload
     max_upload_size_mb: int = int(os.getenv("MAX_UPLOAD_SIZE_MB", "10"))
 
+    # API server
+    api_host: str = os.getenv("API_HOST", "0.0.0.0")
+    api_port: int = int(os.getenv("API_PORT", "8000"))
+
+    # Feature flags
+    use_hybrid_retrieval: bool = True
+
 
 config = Config()

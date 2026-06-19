@@ -57,7 +57,7 @@ _db_available = False
 
 try:
     _engine = create_engine(
-        config.database_url.replace("+asyncpg", "").replace("postgresql+asyncpg://", "postgresql://"),
+        config.database_url.replace("+asyncpg", ""),
         echo=False,
         pool_size=5,
         max_overflow=10,

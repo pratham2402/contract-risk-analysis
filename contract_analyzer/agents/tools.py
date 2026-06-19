@@ -5,6 +5,10 @@ dynamically during its reasoning loop. Tools are read-only except
 escalate_to_human which creates an audit ticket.
 """
 
+import json
+from datetime import UTC, datetime
+from uuid import uuid4
+
 from langchain_core.tools import tool
 
 from contract_analyzer.logging_setup import AuditLogger
@@ -41,7 +45,6 @@ def retrieve_standards(
         JSON string with relevant standards entries including article
         citations, content summaries, and relevance scores.
     """
-    import json
 
     logger.info(
         f"Tool: retrieve_standards query='{query[:100]}'",
@@ -97,7 +100,6 @@ def compare_jurisdictions(jurisdictions: list[str]) -> str:
     Returns:
         JSON string with comparison table for each doctrine.
     """
-    import json
 
     logger.info(f"Tool: compare_jurisdictions {jurisdictions}")
 
@@ -149,9 +151,6 @@ def escalate_to_human(
     Returns:
         JSON string with escalation ticket details for the audit trail.
     """
-    import json
-    from datetime import UTC, datetime
-    from uuid import uuid4
 
     ticket_id = str(uuid4())[:8]
     severity = "high" if standard else "medium"
@@ -194,7 +193,6 @@ def request_more_context(reason: str) -> str:
     Returns:
         JSON string confirming the request was logged.
     """
-    import json
 
     logger.info(f"Tool: request_more_context reason='{reason[:100]}'")
 

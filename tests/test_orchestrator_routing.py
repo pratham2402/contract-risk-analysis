@@ -82,12 +82,6 @@ class TestRouteAfterParse:
         result = orch._route_after_parse(state)
         assert result == "handle_error"
 
-    def test_route_to_error_when_blocked(self, orch):
-        state = _make_state(routing_decision="block")
-        result = orch._route_after_parse(state)
-        assert result == "handle_error"
-
-
 class TestRouteAfterRisk:
     def test_route_to_verify(self, orch):
         finding = Finding(
@@ -123,6 +117,35 @@ class TestRouteAfterRisk:
         state = _make_state(escalation_tickets=[ticket])
         result = orch._route_after_risk(state)
         assert result == "human_review"
+
+    def test_route_to_human_review_when_findings_and_tickets_and_verification_disabled(self, orch):
+        finding = Finding(
+            issue_description="Issue",
+            risk_level=RiskLevel.MEDIUM,
+            category="security",
+            explanation="E",
+            reasoning_trace="T",
+        )
+        ticket = EscalationTicket(ticket_id="t1", reason="Uncertain")
+        state = _make_state(
+            findings=[finding],
+            escalation_tickets=[ticket],
+            verification_enabled=False,
+        )
+        result = orch._route_after_risk(state)
+        assert result == "human_review"
+
+    def test_route_to_generate_when_findings_no_tickets_and_verification_disabled(self, orch):
+        finding = Finding(
+            issue_description="Issue",
+            risk_level=RiskLevel.LOW,
+            category="general",
+            explanation="E",
+            reasoning_trace="T",
+        )
+        state = _make_state(findings=[finding], verification_enabled=False)
+        result = orch._route_after_risk(state)
+        assert result == "generate_decisions"
 
     def test_route_to_error(self, orch):
         state = _make_state(errors=["Risk eval failed"])
