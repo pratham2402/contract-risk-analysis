@@ -58,11 +58,12 @@ class RiskComplianceProcessor:
         if self.specialist_domain == "privacy":
             prompt += (
                 "\n\n## SPECIALIST FOCUS: DATA PROTECTION & PRIVACY\n"
-                "You specialize in GDPR, DPDPA, CCPA/CPRA, HIPAA, FERPA, and GLBA.\n"
-                "Prioritize data protection standards over other frameworks.\n"
+                "You specialize in GDPR, EU AI Act, DPDPA, CCPA/CPRA, HIPAA, FERPA, and GLBA.\n"
+                "Prioritize data protection and AI governance standards over other frameworks.\n"
                 "Pay special attention to: personal data definitions, cross-border\n"
                 "transfer restrictions, data subject rights, breach notification\n"
-                "timelines, and processor obligations.\n"
+                "timelines, AI system classification (prohibited/high-risk/limited), and\n"
+                "processor obligations.\n"
             )
         elif self.specialist_domain == "financial":
             prompt += (

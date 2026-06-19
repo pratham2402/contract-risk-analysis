@@ -1,6 +1,6 @@
 """FastAPI application for Contract Regulatory Compliance Scanner.
 
-Scans contracts against 17 regulatory standards (GDPR, HIPAA, PCI DSS,
+Scans contracts against 18 regulatory standards (GDPR, EU AI Act, HIPAA, PCI DSS,
 SOC 2, NIST CSF, etc.) using FAISS hybrid vector search with evidence-backed
 findings and hallucination detection.
 """

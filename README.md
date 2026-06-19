@@ -1,8 +1,8 @@
 # Contract Regulatory Compliance Scanner
 
-**Scan contracts against 17 regulatory standards with evidence-backed findings.**
+**Scan contracts against 18 regulatory standards with evidence-backed findings.**
 
-A production-grade compliance scanning system that analyzes contract clauses against GDPR, HIPAA, PCI DSS, SOC 2, NIST CSF, SOX, and 11 other standards using FAISS hybrid vector search. The LLM retrieves relevant standards dynamically and produces cited, evidence-backed findings — not hallucinated advice.
+A production-grade compliance scanning system that analyzes contract clauses against GDPR, EU AI Act, HIPAA, PCI DSS, SOC 2, NIST CSF, SOX, and 11 other standards using FAISS hybrid vector search. The LLM retrieves relevant standards dynamically and produces cited, evidence-backed findings — not hallucinated advice.
 
 This is a **regulatory compliance scanner**, not a general contract risk analyzer or chatbot. Every finding is grounded in a specific standard article retrieved from the curated standards database.
 
@@ -21,7 +21,7 @@ FastAPI API (port 8000)
        ├─ finalize ── assemble output
        └─ handle_error ── graceful failure with partial results
                     │
-            FAISS + BM25 Hybrid DB (100 curated entries, 17 standards)
+            FAISS + BM25 Hybrid DB (106 curated entries, 18 standards)
 ```
 
 ### What Each Stage Does
@@ -41,7 +41,7 @@ Everything runs **in-process** — no microservices, no inter-process communicat
 
 1. **Parsing Contract** — Extracting clauses, parties, and governing law
 2. **Classifying Content** — Keyword-based routing to specialist (privacy/financial/generalist)
-3. **Evaluating Risk** — ReAct agent loop with FAISS + BM25 retrieval across 17 standards
+3. **Evaluating Risk** — ReAct agent loop with FAISS + BM25 retrieval across 18 standards
 4. **Verifying Citations** — Cross-referencing citations against retrieved evidence
 5. **Generating Decisions** — Prioritized recommendations with owner assignments
 6. **Finalizing** — Assembling complete analysis output
@@ -50,10 +50,11 @@ Everything runs **in-process** — no microservices, no inter-process communicat
 
 ## Standards Coverage
 
-100 curated entries across 17 standards, each with article-level granularity:
+106 curated entries across 18 standards, each with article-level granularity:
 
 **Data Protection & Privacy:**
 - **GDPR**: Arts. 5, 6, 12-23, 25, 28, 32, 33-34, 35, 37-39, 44-49
+- **EU AI Act** (Regulation 2024/1689): Arts. 5-7, 8-15, 26, 50-56, 99-101 — prohibited practices, high-risk obligations, deployer duties, GPAI, penalties
 - **DPDPA 2023** (India): S.3-4, 6-8, 10-13, 16, 33
 - **CCPA/CPRA** (California): 1798.100-1798.125
 
@@ -93,7 +94,7 @@ A standard applies ONLY if all three layers pass.
 
 Every risk finding is grounded in retrieved evidence:
 
-1. 100 curated standards entries stored in FAISS (dense) + BM25 (sparse) indexes
+1. 106 curated standards entries stored in FAISS (dense) + BM25 (sparse) indexes
 2. During analysis, the ReAct agent dynamically queries for relevant standards
 3. Top-k results are fused using Reciprocal Rank Fusion (70% vector, 30% BM25)
 4. The LLM must explicitly cite which standard article supports each finding
@@ -186,7 +187,7 @@ contract_analyzer/
     workflow.py               # LangGraph StateGraph pipeline
     queue.py                  # In-memory job store with SSE event queues
   retrieval/
-    standards_data.py         # 100 curated standards entries
+    standards_data.py         # 106 curated standards entries
     standards_index.py        # FAISS index management
     hybrid_retriever.py       # FAISS + BM25 with RRF fusion
     bm25_index.py             # BM25 sparse retrieval

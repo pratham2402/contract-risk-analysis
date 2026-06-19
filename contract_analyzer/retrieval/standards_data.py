@@ -359,22 +359,25 @@ STANDARDS_ENTRIES: list[StandardEntry] = [
         id="iso-004",
         standard="ISO27001",
         topic="Access Control",
-        article="Annex A.9",
-        title="Access Control",
+        article="A.5.15-A.5.18, A.8.3-A.8.5",
+        title="Access Control and Identity Management",
         content=(
             "Access to information and information processing facilities must be "
-            "controlled per business and security requirements. Requirements: "
-            "implement an access control policy (A.9.1.1); manage access rights "
-            "including provisioning, review, and removal (A.9.2.1-9.2.6); users "
-            "must follow organizational procedures for secret authentication "
-            "information (A.9.3.1); restrict access to systems and applications "
-            "(A.9.4.1-9.4.5) including secure logon, password management, "
-            "privileged utility restriction, and access control to program source "
-            "code. Role-based access control (RBAC) and principle of least privilege "
-            "are mandatory. Contracts must specify access control requirements for "
-            "all vendor personnel accessing the organization's systems or data."
+            "controlled per business and security requirements under the 2022 edition. "
+            "Requirements include: implement an access control policy and manage "
+            "access rights including provisioning, periodic review, and timely removal "
+            "(A.5.15-A.5.18); implement secure logon procedures at the technological "
+            "level (A.8.3-A.8.5) including strong authentication, password management "
+            "systems that enforce minimum length and complexity, and privileged access "
+            "management with just-in-time elevation. Role-based access control (RBAC) "
+            "and the principle of least privilege are mandatory. User endpoint devices "
+            "must be secured (A.8.1). Information access must be restricted in "
+            "accordance with the access control policy (A.8.3). Contracts must specify "
+            "access control requirements for all vendor personnel accessing the "
+            "organization's systems or data, including provisioning, quarterly review, "
+            "and immediate deprovisioning upon termination or role change."
         ),
-        tags=["access control", "RBAC", "least privilege", "authentication"],
+        tags=["access control", "RBAC", "least privilege", "authentication", "IAM"],
         jurisdiction="Global",
         standard_category="security",
         effective_date=date(2022, 10, 25),
@@ -385,18 +388,21 @@ STANDARDS_ENTRIES: list[StandardEntry] = [
         id="iso-005",
         standard="ISO27001",
         topic="Cryptography",
-        article="Annex A.8.24",
+        article="A.8.24",
         title="Use of Cryptography",
         content=(
             "Cryptographic controls must be used to protect information in accordance "
-            "with a defined policy on the use of cryptography. Requirements include: "
-            "implement a policy on the use of cryptographic controls (A.8.24.1); "
-            "manage cryptographic keys throughout their lifecycle including generation, "
-            "distribution, storage, archiving, and destruction (A.8.24.2). Encryption "
-            "must be applied to data at rest (AES-256 minimum) and data in transit "
-            "(TLS 1.2+ minimum). The cryptographic policy must be reviewed when "
+            "with a defined policy on the use of cryptography under the 2022 edition "
+            "(Technological theme). Requirements include: implement and maintain a "
+            "policy on the use of cryptographic controls covering purpose, algorithms, "
+            "key lengths, and approved libraries; manage cryptographic keys throughout "
+            "their lifecycle including secure generation, distribution, storage, "
+            "rotation, archiving, and destruction; encryption must be applied to data "
+            "at rest (AES-256 or equivalent) and data in transit (TLS 1.3 preferred, "
+            "TLS 1.2 minimum). The cryptographic policy must be reviewed when "
             "significant changes occur or at least annually. Contracts must specify "
-            "encryption standards and key management responsibilities."
+            "encryption standards, key management responsibilities, and breach "
+            "notification obligations in the event of key compromise."
         ),
         tags=["cryptography", "encryption", "key management", "TLS", "AES"],
         jurisdiction="Global",
@@ -409,20 +415,22 @@ STANDARDS_ENTRIES: list[StandardEntry] = [
         id="iso-006",
         standard="ISO27001",
         topic="Supplier Relationships",
-        article="Annex A.15",
-        title="Supplier Relationships",
+        article="A.5.19-A.5.22",
+        title="Supplier Relationships and Supply Chain Security",
         content=(
             "Information security requirements for mitigating risks associated with "
-            "supplier access to organizational assets must be agreed upon and documented. "
-            "Requirements include: establish an information security policy for supplier "
-            "relationships (A.15.1.1); address security within supplier agreements "
-            "(A.15.1.2) including acceptable use of assets, personnel screening, "
-            "compliance with legal and contractual requirements, monitoring and review "
-            "of supplier services, and management of security incidents; address "
-            "information and communication technology supply chain risks (A.15.1.3); "
-            "monitor, review, and audit supplier service delivery regularly (A.15.2.1); "
-            "manage changes to supplier services including re-assessment of risks "
-            "(A.15.2.2). Contracts must include security schedules or exhibits."
+            "supplier access to organizational assets must be agreed upon and documented "
+            "under the 2022 edition (Organisational theme). Requirements include: "
+            "establish an information security policy and specific requirements for "
+            "supplier relationships (A.5.19); address security within supplier agreements "
+            "including acceptable use of assets, personnel screening, compliance with "
+            "legal and contractual requirements, incident notification obligations, and "
+            "right-to-audit provisions (A.5.20); define and apply processes and "
+            "procedures for managing information and communication technology supply "
+            "chain risks, including sub-tier dependencies and concentration risk "
+            "(A.5.21); and monitor, review, and audit supplier service delivery "
+            "regularly, escalating non-conformities and managing changes to supplier "
+            "services including re-assessment of risks (A.5.22)."
         ),
         tags=["supplier", "vendor management", "audit", "supply chain", "third-party"],
         jurisdiction="Global",
@@ -435,20 +443,24 @@ STANDARDS_ENTRIES: list[StandardEntry] = [
         id="iso-007",
         standard="ISO27001",
         topic="Incident Management",
-        article="Annex A.5.24-25",
+        article="A.5.24-A.5.27",
         title="Information Security Incident Management",
         content=(
             "The organization must plan and prepare for managing information security "
-            "incidents. Requirements include: establish responsibilities and procedures "
-            "for incident management (A.5.24); ensure incidents are reported through "
-            "appropriate channels as quickly as possible (A.5.25); assess and decide "
-            "on information security events to determine if they should be classified "
-            "as incidents (A.5.26); respond to incidents in accordance with documented "
-            "procedures (A.5.27); collect and preserve evidence related to security "
-            "incidents (A.5.28); and use knowledge gained from incidents to strengthen "
-            "controls and reduce likelihood or impact of future incidents (A.5.29). "
-            "Contracts must define incident notification timelines, joint investigation "
-            "procedures, and information sharing protocols."
+            "incidents under the 2022 edition (Organisational theme). Requirements "
+            "include: establish responsibilities and procedures for incident management, "
+            "including escalation paths and communication plans (A.5.24); ensure "
+            "incidents are reported through appropriate channels as quickly as possible, "
+            "with mandatory reporting timeframes defined in policy (A.5.25); assess "
+            "and triage information security events to determine if they constitute "
+            "incidents requiring formal response (A.5.26); respond to incidents in "
+            "accordance with documented procedures including containment, eradication, "
+            "and recovery (A.5.27); collect and preserve digital evidence in a "
+            "forensically sound manner (A.5.28); conduct post-incident reviews and "
+            "use knowledge gained to strengthen controls and reduce likelihood or impact "
+            "of future incidents (A.5.29). Contracts must define incident notification "
+            "timelines (typically 24-72 hours), joint investigation procedures, and "
+            "information sharing protocols."
         ),
         tags=["incident", "response", "reporting", "forensics", "lessons learned"],
         jurisdiction="Global",
@@ -461,21 +473,25 @@ STANDARDS_ENTRIES: list[StandardEntry] = [
         id="iso-008",
         standard="ISO27001",
         topic="Secure Development",
-        article="Annex A.8.28-29",
+        article="A.8.25-A.8.29",
         title="Security in Development and Support Processes",
         content=(
-            "Secure development practices must be applied to all development activities. "
-            "Requirements: establish rules for secure development of software and "
-            "systems and apply them (A.8.25); apply security requirements in the "
-            "development lifecycle, including requirements analysis, design, "
-            "implementation, testing, and deployment (A.8.26); security testing must "
-            "be performed during development (A.8.29); test data must be carefully "
-            "selected, protected, and controlled (A.8.33); change control procedures "
-            "must be applied to all system changes (A.8.32). Production data must not "
-            "be used for testing without appropriate sanitization. Contracts for "
-            "software services must include secure development obligations."
+            "Secure development practices must be applied to all development activities "
+            "under the 2022 edition (Technological theme). Requirements: establish and "
+            "apply rules for secure development of software and systems, including "
+            "secure coding principles (A.8.28 — new 2022 control); apply security "
+            "requirements throughout the development lifecycle from requirements "
+            "analysis through design, implementation, testing, and deployment (A.8.25); "
+            "security testing including SAST, DAST, and penetration testing must be "
+            "integrated into the development pipeline (A.8.29); test data must be "
+            "carefully selected, protected, and controlled — production data must "
+            "not be used for testing without appropriate sanitization (A.8.33); "
+            "change control procedures must be applied to all system changes with "
+            "appropriate approval gates (A.8.32). Contracts for software services "
+            "must include secure development obligations, vulnerability disclosure "
+            "timelines, and source code escrow provisions where applicable."
         ),
-        tags=["SDLC", "secure coding", "testing", "change management", "development"],
+        tags=["SDLC", "secure coding", "SAST", "DAST", "development", "DevSecOps"],
         jurisdiction="Global",
         standard_category="security",
         effective_date=date(2022, 10, 25),
@@ -486,20 +502,26 @@ STANDARDS_ENTRIES: list[StandardEntry] = [
         id="iso-009",
         standard="ISO27001",
         topic="Operational Security",
-        article="Annex A.12",
-        title="Operations Security",
+        article="A.5.37, A.8.8-A.8.17",
+        title="Operations Security and Technological Controls",
         content=(
-            "Information processing facilities must be operated securely through "
-            "documented operating procedures (A.12.1.1); changes to organization, "
-            "business processes, information processing facilities, and systems must "
-            "be controlled (A.12.1.2); capacity management must ensure required "
-            "performance (A.12.1.3); development, test, and operational environments "
-            "must be separated (A.12.1.4); protection against malware must be "
-            "implemented (A.12.2.1); technical vulnerabilities must be managed and "
-            "remediated (A.12.6.1); audit logging must be enabled and audit logs "
-            "protected (A.12.4.1-4.3); clocks must be synchronized (A.12.4.4)."
+            "Information processing facilities must be operated securely under the "
+            "2022 edition (Technological theme). Requirements include: documented "
+            "operating procedures for information processing facilities (A.5.37); "
+            "protection against malware through anti-malware software, awareness "
+            "training, and phishing detection (A.8.7); technical vulnerability "
+            "management including timely remediation based on severity (A.8.8); "
+            "secure configuration management with documented baselines, drift "
+            "detection, and review (A.8.9 — new 2022 control); information deletion "
+            "from systems and media in accordance with retention policies (A.8.10 "
+            "— new 2022 control); data masking, pseudonymisation, and anonymisation "
+            "controls aligned with privacy requirements (A.8.11 — new 2022 control); "
+            "data leakage prevention (DLP) measures for systems, networks, and "
+            "devices (A.8.12 — new 2022 control); audit logging including protection "
+            "against tampering, clock synchronisation, and retention (A.8.15-A.8.17); "
+            "network security management and segregation (A.8.20-8.22)."
         ),
-        tags=["operations", "malware", "vulnerability", "logging", "change control"],
+        tags=["operations", "malware", "vulnerability", "DLP", "data masking", "configuration"],
         jurisdiction="Global",
         standard_category="security",
         effective_date=date(2022, 10, 25),
@@ -510,22 +532,25 @@ STANDARDS_ENTRIES: list[StandardEntry] = [
         id="iso-010",
         standard="ISO27001",
         topic="Compliance",
-        article="Clause 9 / Annex A.18",
+        article="Clause 9 / A.5.31-A.5.36",
         title="Performance Evaluation and Compliance",
         content=(
             "The organization must evaluate information security performance and "
             "ISMS effectiveness (Clause 9). Internal audits must be conducted at "
             "planned intervals (Clause 9.2). Management reviews must be conducted "
-            "at planned intervals (Clause 9.3). Legal, statutory, regulatory, and "
-            "contractual requirements related to information security must be "
-            "identified and documented (A.18.1.1); appropriate controls must be "
-            "implemented to ensure compliance (A.18.1.2); records must be protected "
-            "from loss, destruction, falsification, unauthorized access, and "
-            "unauthorized release (A.18.1.3); privacy and PII protection must be "
-            "ensured (A.18.1.4); independent review of information security must "
-            "be performed at planned intervals or when significant changes occur "
-            "(A.18.2.1); compliance with security policies, standards, and technical "
-            "requirements must be reviewed regularly (A.18.2.2)."
+            "at planned intervals (Clause 9.3). Under the 2022 edition, legal, "
+            "statutory, regulatory, and contractual requirements related to "
+            "information security must be identified and documented (A.5.31); "
+            "intellectual property rights and use of proprietary products must be "
+            "respected (A.5.32); records must be protected from loss, destruction, "
+            "falsification, unauthorized access, and unauthorized release, with "
+            "retention periods aligned to business and legal requirements (A.5.33); "
+            "privacy and protection of PII must be ensured per applicable legislation "
+            "(A.5.34); independent review of information security must be performed "
+            "at planned intervals or when significant changes occur (A.5.35); "
+            "compliance with security policies, standards, and technical requirements "
+            "must be reviewed regularly, with non-conformities tracked and remediated "
+            "(A.5.36)."
         ),
         tags=["compliance", "audit", "management review", "legal", "PII"],
         jurisdiction="Global",
@@ -1691,6 +1716,181 @@ STANDARDS_ENTRIES: list[StandardEntry] = [
         effective_date=date(2020, 1, 1),
         last_amended=date(2023, 1, 1),
         authority_level="statute",
+    ),
+
+    # ── EU AI Act ─────────────────────────────────────────────────
+    StandardEntry(
+        id="aiact-001",
+        standard="EU_AI_ACT",
+        topic="Risk-Based Classification",
+        article="Art. 5-7, Annex III",
+        title="Risk-Based Approach to AI Regulation",
+        content=(
+            "The EU AI Act (Regulation (EU) 2024/1689, entered into force 1 August 2024) "
+            "adopts a four-tier risk-based approach. Prohibited AI practices (Art. 5 — "
+            "effective 2 February 2025) include: manipulative or deceptive AI systems, "
+            "social scoring by public authorities, real-time remote biometric "
+            "identification in public spaces (with narrow law enforcement exceptions), "
+            "biometric categorisation based on protected characteristics, emotion "
+            "recognition in workplaces and education, and untargeted scraping of facial "
+            "images. High-risk AI systems (Art. 6, Annex III) include systems in: "
+            "biometrics, critical infrastructure, education and vocational training, "
+            "employment and worker management, essential public and private services "
+            "(credit scoring, insurance pricing), law enforcement, migration and border "
+            "management, and administration of justice. Contracts involving AI systems "
+            "must first classify the system's risk tier — prohibited systems may not "
+            "be deployed; high-risk systems trigger the full compliance obligations."
+        ),
+        tags=["risk classification", "prohibited AI", "high-risk", "Annex III", "biometrics"],
+        jurisdiction="EU",
+        standard_category="data_protection",
+        effective_date=date(2024, 8, 1),
+        last_amended=None,
+        authority_level="regulation",
+    ),
+    StandardEntry(
+        id="aiact-002",
+        standard="EU_AI_ACT",
+        topic="High-Risk AI Provider Obligations",
+        article="Art. 8-15",
+        title="Obligations for Providers of High-Risk AI Systems",
+        content=(
+            "Providers of high-risk AI systems must comply with extensive obligations "
+            "before and after placing systems on the EU market (effective 2 August 2026 "
+            "for Annex III systems, potentially extended to 2 December 2027 under the "
+            "2025 Digital Omnibus proposal). Core obligations include: implement a "
+            "continuous risk management system identifying and mitigating known and "
+            "foreseeable risks throughout the AI lifecycle (Art. 9); ensure training, "
+            "validation, and test datasets are relevant, representative, and free from "
+            "biases (Art. 10 — data governance); prepare and maintain comprehensive "
+            "technical documentation for 10 years after market placement (Art. 11); "
+            "design logging capabilities for traceability of system outputs (Art. 12); "
+            "provide clear instructions for use enabling deployers' compliance (Art. 13 "
+            "— transparency); design effective human oversight measures (Art. 14); and "
+            "ensure appropriate levels of accuracy, robustness, and cybersecurity "
+            "including resistance to adversarial manipulation (Art. 15). Contracts for "
+            "high-risk AI systems must address each obligation and assign compliance "
+            "responsibilities."
+        ),
+        tags=["provider", "risk management", "data governance", "technical documentation", "human oversight"],
+        jurisdiction="EU",
+        standard_category="data_protection",
+        effective_date=date(2024, 8, 1),
+        last_amended=None,
+        authority_level="regulation",
+    ),
+    StandardEntry(
+        id="aiact-003",
+        standard="EU_AI_ACT",
+        topic="Deployer Obligations",
+        article="Art. 26",
+        title="Obligations for Deployers (Users) of High-Risk AI Systems",
+        content=(
+            "Deployers (users) of high-risk AI systems must: use the system in accordance "
+            "with the provider's instructions for use (Art. 26(1)); assign human oversight "
+            "to competent natural persons with the necessary competence, training, and "
+            "authority (Art. 26(2)); ensure input data is relevant and sufficiently "
+            "representative in view of the intended purpose (Art. 26(3)); monitor the "
+            "system's operation and report any serious incidents to the provider and "
+            "market surveillance authorities without undue delay (Art. 26(4)); retain "
+            "automatically generated logs for at least 6 months unless otherwise "
+            "specified in applicable law (Art. 26(5)); perform a Fundamental Rights "
+            "Impact Assessment before deploying certain high-risk systems, particularly "
+            "in banking and insurance (Art. 27); and inform workers' representatives "
+            "and affected employees when a high-risk AI system is deployed in the "
+            "workplace (Art. 26(7)). Contracts must define deployer-vs-provider "
+            "responsibilities and specify incident notification timelines."
+        ),
+        tags=["deployer", "human oversight", "monitoring", "FRIA", "workplace"],
+        jurisdiction="EU",
+        standard_category="data_protection",
+        effective_date=date(2024, 8, 1),
+        last_amended=None,
+        authority_level="regulation",
+    ),
+    StandardEntry(
+        id="aiact-004",
+        standard="EU_AI_ACT",
+        topic="Transparency Obligations",
+        article="Art. 50",
+        title="Transparency Obligations for Certain AI Systems",
+        content=(
+            "Transparency obligations apply broadly, not just to high-risk systems "
+            "(effective 2 August 2026). Providers must ensure that AI systems intended "
+            "to interact directly with natural persons are designed and developed in "
+            "such a way that individuals are informed they are interacting with an AI "
+            "system, unless obvious from the circumstances (Art. 50(1)). Generative AI "
+            "outputs (text, images, audio, video) must be marked in a machine-readable "
+            "format as artificially generated (Art. 50(2)). Deployers of emotion "
+            "recognition systems or biometric categorisation systems must inform affected "
+            "natural persons about the system's operation (Art. 50(3)). Deployers using "
+            "AI to generate or manipulate deep fake content must disclose the artificial "
+            "origin (Art. 50(4)). Contracts involving AI interaction with end users "
+            "must include AI transparency clauses specifying disclosure mechanisms."
+        ),
+        tags=["transparency", "disclosure", "generative AI", "deep fake", "emotion recognition"],
+        jurisdiction="EU",
+        standard_category="data_protection",
+        effective_date=date(2024, 8, 1),
+        last_amended=None,
+        authority_level="regulation",
+    ),
+    StandardEntry(
+        id="aiact-005",
+        standard="EU_AI_ACT",
+        topic="General-Purpose AI Model Obligations",
+        article="Art. 51-56",
+        title="Obligations for General-Purpose AI Models",
+        content=(
+            "General-purpose AI (GPAI) models, including large language models and "
+            "foundation models, face tiered obligations (effective 2 August 2025). All "
+            "GPAI model providers must: draw up and keep up-to-date technical "
+            "documentation including training and testing processes, evaluation results, "
+            "and energy consumption; and provide information to downstream AI system "
+            "providers enabling them to understand capabilities and limitations (Art. 53). "
+            "GPAI models with systemic risk (trained with cumulative compute exceeding "
+            "10^25 FLOPs, or designated by the Commission) must additionally: perform "
+            "model evaluations including adversarial testing, assess and mitigate "
+            "systemic risks, document and report serious incidents, and ensure adequate "
+            "cybersecurity protection (Art. 55). The AI Office oversees GPAI compliance "
+            "at EU level. Contracts involving foundation model APIs must address model "
+            "documentation, training data transparency, and systemic risk assessments."
+        ),
+        tags=["GPAI", "foundation model", "systemic risk", "model evaluation", "transparency"],
+        jurisdiction="EU",
+        standard_category="data_protection",
+        effective_date=date(2024, 8, 1),
+        last_amended=None,
+        authority_level="regulation",
+    ),
+    StandardEntry(
+        id="aiact-006",
+        standard="EU_AI_ACT",
+        topic="Penalties and Enforcement",
+        article="Art. 99-101",
+        title="Penalties, Enforcement, and Extraterritorial Reach",
+        content=(
+            "The EU AI Act carries the most severe penalties of any EU digital "
+            "regulation (effective 2 August 2025). Fines for non-compliance are tiered: "
+            "violations of prohibited AI practices — up to €35 million or 7% of global "
+            "annual turnover, whichever is higher (Art. 99(3)); most other compliance "
+            "failures including high-risk obligations and GPAI rules — up to €15 million "
+            "or 3% of turnover (Art. 99(2)); supplying incorrect, incomplete, or "
+            "misleading information to notified bodies or competent authorities — up to "
+            "€7.5 million or 1% of turnover (Art. 99(1)). Lower ceilings apply to SMEs "
+            "and start-ups. The Act has extraterritorial reach: it applies to providers "
+            "and deployers outside the EU where the output of the AI system is used in "
+            "the EU (Art. 2). Competent national market surveillance authorities enforce "
+            "the Act, coordinated by the European AI Board. Contracts involving AI "
+            "systems with EU nexus must address penalty risk, governing law, and "
+            "jurisdictional disputes."
+        ),
+        tags=["penalties", "fines", "enforcement", "extraterritorial", "AI Board"],
+        jurisdiction="EU",
+        standard_category="data_protection",
+        effective_date=date(2024, 8, 1),
+        last_amended=None,
+        authority_level="regulation",
     ),
 
     # ── NIST CSF 2.0 ────────────────────────────────────────────

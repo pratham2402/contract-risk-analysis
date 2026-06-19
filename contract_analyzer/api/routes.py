@@ -130,7 +130,7 @@ async def analyze_contract(request: Request):
     Pipeline:
     1. Parse contract + classify — extract clauses, parties, governing law, then
        keyword-route to privacy/financial/generalist specialist
-    2. Evaluate risk — ReAct agent with FAISS+BM25 retrieval across 17 standards
+    2. Evaluate risk — ReAct agent with FAISS+BM25 retrieval across 18 standards
     3. Verify findings — cross-reference citations against retrieved evidence
     4. Generate decisions — prioritized recommendations with owner assignments
     5. Return the complete analysis

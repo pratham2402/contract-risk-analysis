@@ -8,6 +8,7 @@ This is NOT an agentic component — it's a single structured LLM call.
 """
 
 import json
+import re
 import time
 
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -19,6 +20,72 @@ from contract_analyzer.models.output import VerificationFlag, VerificationReport
 
 logger = AuditLogger(__name__, "verification_agent")
 
+# ── Article range normalization ──────────────────────────────────────────────
+# Curated standards data uses range notation (e.g., "Art. 33-34") but the
+# risk agent may cite a specific article within that range ("Art. 33").
+# Expanding ranges before sending to the verifier prevents false
+# "unsupported_citation" flags from exact-string mismatches.
+
+_MAX_RANGE_EXPANSION = 20  # don't expand ranges larger than this
+
+
+def _expand_article_ranges(article: str) -> str:
+    """Expand article range notation into an explicit comma-separated list.
+
+    >>> _expand_article_ranges("Art. 33-34")
+    'Art. 33, Art. 34'
+    >>> _expand_article_ranges("S. 3-5, 10A")
+    'S. 3, S. 4, S. 5, S. 10A'
+    >>> _expand_article_ranges("Req. 1-2")
+    'Req. 1, Req. 2'
+    >>> _expand_article_ranges("Art. 5")
+    'Art. 5'
+    """
+    if not article:
+        return article
+
+    parts = [p.strip() for p in article.split(",")]
+    expanded: list[str] = []
+
+    for part in parts:
+        # Skip complex legal cites like "§§ 2-711-2-717" (multi-level dashes)
+        if part.count("-") > 1:
+            expanded.append(part)
+            continue
+
+        # Pattern: "PREFIX<N>-<M>" where N and M are digits and prefix ends
+        # with a non-digit character (or is empty).  Captures:
+        #   "Art. 33-34"   → prefix="Art. ",  start=33, end=34
+        #   "Annex A.8.28-29" → prefix="Annex A.8.", start=28, end=29
+        #   "1798.100-1798.125" → prefix="1798.", start=100, end=125
+        m = re.match(r"^(.+?)(\d+)-(\d+)$", part)
+        if m:
+            prefix = m.group(1)
+            start, end = int(m.group(2)), int(m.group(3))
+            # Only expand if the prefix is short (not a complex cite) and
+            # the range is reasonable.
+            if end > start and len(prefix) < 40 and (end - start) <= _MAX_RANGE_EXPANSION:
+                for i in range(start, end + 1):
+                    expanded.append(f"{prefix}{i}")
+                continue
+
+        # Pattern: "LETTER<N>-LETTER<M>" — same letter prefix, numeric range.
+        #   "CC3-CC4" → prefix="CC", start=3, end=4
+        #   "P1-P8"    → prefix="P",  start=1, end=8
+        m = re.match(r"^([A-Za-z]+)(\d+)-([A-Za-z]+)(\d+)$", part)
+        if m:
+            pfx_start, num_start = m.group(1), int(m.group(2))
+            pfx_end, num_end = m.group(3), int(m.group(4))
+            if pfx_start == pfx_end and num_end > num_start and (num_end - num_start) <= _MAX_RANGE_EXPANSION:
+                for i in range(num_start, num_end + 1):
+                    expanded.append(f"{pfx_start}{i}")
+                continue
+
+        # No expansion — keep the original part
+        expanded.append(part)
+
+    return ", ".join(expanded)
+
 VERIFICATION_SYSTEM_PROMPT = """You are a forensic compliance auditor. Your job is to validate
 every citation a Risk & Compliance Agent produced against a set of retrieved evidence.
 
@@ -26,7 +93,9 @@ every citation a Risk & Compliance Agent produced against a set of retrieved evi
 
 For every finding, you check:
 1. **Citation integrity**: Every standard/article cited in `referenced_standards`
-   must appear in the retrieved evidence set with matching article numbers.
+   must appear in the retrieved evidence set. The evidence `article` field may
+   have been expanded from range notation (e.g., "Art. 33-34" → "Art. 33, Art. 34")
+   — a citation to *any* article within an expanded range is a VALID match.
 2. **Reasoning-to-evidence connection**: The `reasoning_trace` must reference
    specific retrieved excerpts. If reasoning asserts something not in evidence, flag it.
 3. **Risk-level calibration**: Does the risk_level match the severity described
@@ -34,12 +103,24 @@ For every finding, you check:
 4. **Generic exclusion check**: Were standards excluded with generic reasons
    ("not applicable", "out of scope") without substantive justification?
 
+## ARTICLE MATCHING RULES (most important)
+
+- If the evidence article field contains a comma-separated list (e.g., "Art. 33, Art. 34"
+  or "S. 3, S. 4, S. 5"), a citation to ANY single article in that list is VALID.
+- If evidence has an `article_original` field showing the original range notation, that
+  tells you the article field was expanded — the range covers ALL articles between
+  the endpoints.
+- Only flag `unsupported_citation` when the cited article number is clearly OUTSIDE
+  the evidence coverage, or when the article field is a single value that doesn't match.
+- A citation like "Art. 33" against evidence whose article field includes "Art. 33"
+  (even as part of a list) is a MATCH — do NOT flag it.
+
 ## FLAG TYPES
 
 - `hallucinated_citation`: A standard/article cited in findings does not appear
-  at all in the retrieved evidence set.
+  at all in the retrieved evidence set (the standard name is absent entirely).
 - `unsupported_citation`: The standard exists in evidence but the specific article
-  number cited was NOT retrieved.
+  number cited falls clearly outside the evidence coverage.
 - `disconnected_reasoning`: The reasoning trace makes claims not supported by
   any retrieved excerpt.
 - `risk_level_mismatch`: The risk_level assigned is inconsistent with the
@@ -48,8 +129,10 @@ For every finding, you check:
 
 ## SEVERITY
 
-- `block`: The finding is fundamentally unreliable (hallucinated core citation).
-- `warn`: The finding has issues but may still be directionally correct.
+- `block`: The finding is fundamentally unreliable (hallucinated core citation —
+  the standard itself doesn't exist in evidence).
+- `warn`: The finding has issues but may still be directionally correct
+  (includes imprecise article references, weak reasoning connections, borderline risk levels).
 - `info`: Minor issue, likely not impactful.
 
 ## OUTPUT FORMAT
@@ -72,9 +155,11 @@ Return a JSON object:
 ## RULES
 
 - Be precise: flag only what you can prove from the evidence.
-- If a citation is partially correct (standard matches but article is wrong),
-  use `unsupported_citation`, not `hallucinated_citation`.
-- Count every hallucinated or unsupported citation.
+- If a citation is partially correct (standard matches but article is wrong or
+  imprecise), use `unsupported_citation` at `warn` severity — NOT `block`.
+- `block` severity is reserved for `hallucinated_citation` where the standard
+  itself is fabricated.
+- Count every hallucinated or unsupported citation in `hallucination_count`.
 - If no issues found, verified=true with empty flags.
 - `adjusted_confidence` is the average confidence across all findings after
   penalizing for flags: -0.2 per block, -0.1 per warn, -0.05 per info.
@@ -98,7 +183,34 @@ class VerificationProcessor:
         findings: list[dict],
         retrieved_evidence: list[dict],
     ) -> str:
-        """Build the verification input payload."""
+        """Build the verification input payload.
+
+        Article ranges in evidence are expanded so that the verifier can
+        correctly match a citation like "Art. 33" against evidence whose
+        curated article field reads "Art. 33-34".
+        """
+        # Normalize evidence articles to expand ranges
+        norm_evidence: list[dict] = []
+        for e in retrieved_evidence:
+            raw_article = e.get("article")
+            normalized = _expand_article_ranges(raw_article) if raw_article else raw_article
+            entry: dict = {
+                "standard": e.get("standard", ""),
+                "article": normalized,
+                "title": e.get("title", ""),
+                "content": e.get("content", "")[:800],
+            }
+            # Include the original article text so the verifier knows a range
+            # expansion happened — prevents confusion when the article field
+            # suddenly contains a long comma-separated list.
+            if normalized != raw_article:
+                entry["article_original"] = raw_article
+                entry["_note"] = (
+                    "article field was expanded from the original range notation "
+                    "for matching convenience"
+                )
+            norm_evidence.append(entry)
+
         return json.dumps({
             "task": "Validate the following compliance findings against the retrieved evidence.",
             "findings": [
@@ -115,15 +227,7 @@ class VerificationProcessor:
                 }
                 for f in findings
             ],
-            "retrieved_evidence": [
-                {
-                    "standard": e.get("standard", ""),
-                    "article": e.get("article"),
-                    "title": e.get("title", ""),
-                    "content": e.get("content", "")[:800],
-                }
-                for e in retrieved_evidence
-            ],
+            "retrieved_evidence": norm_evidence,
         }, indent=2)
 
     async def process(

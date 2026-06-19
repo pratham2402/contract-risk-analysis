@@ -1,10 +1,10 @@
 # Contract Compliance Analyzer
 
-LangGraph orchestration pipeline for contract risk and compliance analysis. Uses a ReAct agent with dynamic tool calling for risk evaluation across 17 regulatory standards (GDPR, HIPAA, PCI DSS, SOC 2, NIST CSF, etc.) via FAISS hybrid vector search. All components run in-process — no separate microservices.
+LangGraph orchestration pipeline for contract risk and compliance analysis. Uses a ReAct agent with dynamic tool calling for risk evaluation across 18 regulatory standards (GDPR, EU AI Act, HIPAA, PCI DSS, SOC 2, NIST CSF, etc.) via FAISS hybrid vector search. All components run in-process — no separate microservices.
 
 ## Token efficiency
 
-- **Do NOT read `standards_data.py` in full** unless adding new standards — it's 1718 lines of curated regulatory entries. Use grep to find specific standards.
+- **Do NOT read `standards_data.py` in full** unless adding new standards — it's ~3000 lines of curated regulatory entries. Use grep to find specific standards.
 - **Do NOT read generated data files** — `.faiss`, `.npy`, `.pkl` files in `data/` are binary and unreadable.
 - **Do NOT re-read files already read earlier in the session** — the harness tracks state.
 - **Use the Explore agent** for broad searches across many files rather than reading each one.
@@ -60,14 +60,14 @@ FastAPI API (port 8000)
        ├─ generate_decisions ── LLM produces prioritized recommendations
        └─ finalize ── assemble output
                     │
-            FAISS + BM25 Hybrid DB (17 standards)
+            FAISS + BM25 Hybrid DB (18 standards)
 ```
 
 - **6-stage LangGraph pipeline** with conditional routing and verification gating
 - **One genuine agent**: Risk evaluation uses a ReAct reasoning loop (Thought→Action→Observation) with 4 tools (retrieve_standards, compare_jurisdictions, escalate_to_human, request_more_context). The LLM decides when to retrieve, what to query, and when evidence is sufficient.
 - **Other stages** are single-pass LLM calls with structured output
 - **3 specialist profiles** for risk agent: generalist, privacy, financial (keyword-routed)
-- **FAISS hybrid retrieval**: vector search (70%) + BM25 (30%) over 17 standards via Reciprocal Rank Fusion
+- **FAISS hybrid retrieval**: vector search (70%) + BM25 (30%) over 18 standards via Reciprocal Rank Fusion
 - **Verification**: cross-references findings against retrieved evidence, flags hallucinated/unsupported citations at threshold 0.6
 - **SSE streaming**: real-time stage progress pushed via per-job asyncio.Queue
 
@@ -101,6 +101,6 @@ FastAPI API (port 8000)
 - **Everything runs in-process** — no microservices, no A2A protocol, no multi-process. Simpler deployment, lower memory.
 - **Only the risk agent is agentic** — it runs a ReAct loop with tool calling. Other stages are single-pass LLM calls with structured output prompts.
 - **Hybrid retrieval**: dense (sentence-transformers all-MiniLM-L6-v2) + sparse (BM25) with configurable weights
-- **17 standards**: GDPR, DPDPA, CCPA, HIPAA, PCI DSS, ISO 27001, SOC 2, NIST CSF, SOX, FedRAMP, FERPA, GLBA, ICA, IT Act, Restatement, UCC Art. 2, DGCL
+- **18 standards**: GDPR, EU AI Act, DPDPA, CCPA, HIPAA, PCI DSS, ISO 27001, SOC 2, NIST CSF, SOX, FedRAMP, FERPA, GLBA, ICA, IT Act, Restatement, UCC Art. 2, DGCL
 - **Max ReAct iterations**: 10 (configurable via `RISK_AGENT_MAX_ITERATIONS`)
 - **Evidence collection**: Retrieved standards are extracted from ReAct tool messages and passed to verification to prevent hallucination false-positives

@@ -1,6 +1,6 @@
 # Compliance Standards Inventory - Contract Compliance Analyzer Vector Database
 
-Generated: 2026-05-08 | **100 entries across 17 standards**
+Generated: 2026-05-08 | Updated: 2026-06-19 | **106 entries across 18 standards**
 
 ---
 
@@ -42,6 +42,17 @@ Generated: 2026-05-08 | **100 entries across 17 standards**
 | ccpa-003 | Regs. Art. 9 | Mandatory Annual Cybersecurity Audits |
 | ccpa-004 | Regs. Art. 10 | Privacy Risk Assessments |
 | ccpa-005 | Regs. Art. 11 | Automated Decision-Making Technology (ADMT) |
+
+### EU AI Act - Regulation (EU) 2024/1689 (6 entries)
+
+| ID | Article | Topic |
+|----|---------|-------|
+| aiact-001 | Art. 5-7, Annex III | Risk-Based Classification |
+| aiact-002 | Art. 8-15 | High-Risk AI Provider Obligations |
+| aiact-003 | Art. 26 | Deployer Obligations |
+| aiact-004 | Art. 50 | Transparency Obligations |
+| aiact-005 | Art. 51-56 | General-Purpose AI Model Obligations |
+| aiact-006 | Art. 99-101 | Penalties and Enforcement |
 
 ---
 
