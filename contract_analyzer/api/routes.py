@@ -75,7 +75,7 @@ async def _run_analysis(contract_text: str, contract_name: str) -> ContractSubmi
         contract_name=contract_name,
     )
 
-    analysis_dict = analysis.model_dump()
+    analysis_dict = analysis.model_dump(mode="json")
     try:
         save_contract(
             name=contract_name,

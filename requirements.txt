@@ -12,6 +12,8 @@ rank-bm25>=0.2.2
 numpy>=1.26.0
 sqlalchemy[asyncio]>=2.0.0
 asyncpg>=0.29.0
+# Sync SQLAlchemy engine driver used by contract_analyzer.persistence.database
+psycopg[binary]>=3.2
 python-dotenv>=1.0.0
 pydantic>=2.0.0
 httpx>=0.28.0

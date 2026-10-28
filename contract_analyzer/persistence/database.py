@@ -56,8 +56,11 @@ SessionLocal = None
 _db_available = False
 
 try:
+    _database_url = config.database_url.replace(
+        "postgresql+asyncpg://", "postgresql+psycopg://", 1
+    )
     _engine = create_engine(
-        config.database_url.replace("+asyncpg", ""),
+        _database_url,
         echo=False,
         pool_size=5,
         max_overflow=10,
@@ -66,8 +69,10 @@ try:
     _engine.connect().close()
     SessionLocal = sessionmaker(bind=_engine, autoflush=False, autocommit=False)
     _db_available = True
-except Exception:
-    logger.warning("PostgreSQL not available, running without persistence")
+except Exception as exc:
+    logger.warning(
+        "PostgreSQL not available, running without persistence", error=str(exc)
+    )
 
 
 def init_db() -> None:
